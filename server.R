@@ -21,7 +21,8 @@ function(input, output, session) {
       data_effectif[(profession_sante == input$profession_dep & 
                        annee >= input$periode_dep[1] & 
                        annee <= input$periode_dep[2] & 
-                       libelle_departement == input$departement), ]
+                       libelle_departement == input$departement &
+                       classe_age != "tout_age"), ]
     })
   })
   
