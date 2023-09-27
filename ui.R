@@ -103,13 +103,11 @@ ui <- dashboardPage(
                                        box(title = "Homme(s) : ", width = NULL, status = "primary", infoBoxOutput("percentTotalNoFilter"))
                                    )),
                             column(width = 4,
-                                   box(title = "Et en ramenant à la population ?", width = NULL, solidHeader = TRUE, status = "success",
-                                       #box(title = "Number of Customers", width = NULL, status = "success", infoBoxOutput("customerCountStayed")),
-                                       #box(title = "Percent of Total Customers", width = NULL, status = "success", infoBoxOutput("percentTotalStayed"))
+                                   box(title = "Et en ramenant à la population ?", width = NULL, solidHeader = TRUE, status = "success"
                                    )),
                             column(width = 4,
                                    box(title = "Comparaison", width = NULL, solidHeader = TRUE, status = "warning",
-                                       box(title = "Ile de France : ", width = NULL, status = "warning", infoBoxOutput("customerCountChurn")),
+                                       box(title = "Ile de France : ", width = NULL, status = "warning", infoBoxOutput("jizof") ),
                                        box(title = "Mayotte : ", width = NULL, status = "warning", infoBoxOutput("percentTotalChurn"))
                                    ))
                           )
