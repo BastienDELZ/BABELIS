@@ -65,14 +65,60 @@ ui <- dashboardPage(
               fluidPage(
                 headerPanel("Données départementales"),
                 sidebarLayout(
-                  sidebarPanel(
-                    selectInput("departement_departmental", label = "Sélectionnez un département :",
-                                choices = c("Hérault", "J'ai pas d'inspi"), multiple = FALSE),
-                    selectInput("profession_departmental", label = "Profession :",
-                                choices = c("Dentiste", "Rhumatologue"), multiple = FALSE)
+                  sidebarPanel(width = 3,
+                               h3("Critères", align ="center"),
+                               tags$hr(),
+                               sliderInput("periode_dep", # se sera input$periode_dep dans le serveur
+                                           label = "Choisissez une période",
+                                           value = c(2010, 2021),#valeur de base affichée par défaut
+                                           min = min(data_effectif[, annee]),
+                                           max = max(data_effectif[, annee]),
+                                           step = 1,
+                                           #Utiliser pour ne pas avoir de virgule en séparateur de millier
+                                           sep =""
+                               ),
+                               selectInput(
+                                 inputId = "profession_dep",
+                                 label = "Profession(s) libérale(s) :",
+                                 #a remplacer par levels(data_effectif[, profession_sante])
+                                 choices = levels(data_effectif[, profession_sante]),
+                                 #Pemert le choix de plusieurs professions <- a discuter
+                                 multiple = F
+                               ),
+                               selectInput(
+                                 inputId = "departement",
+                                 label = "Département(s) à rechercher :",
+                                 #a remplacer par levels(data_effectif[, libelle_departement])
+                                 choices = levels(data_effectif[, libelle_departement]),
+                                 #Pemert le choix de plusieurs departement <- a discuter
+                                 multiple = F
+                               ),
+                               checkboxGroupInput(inputId = "sexe_dep", 
+                                                  label = "Please select", 
+                                                  #a remplacer par levels(test[, libelle_sexe])
+                                                  selected = "F",
+                                                  #a remplacer par levels(test[, libelle_sexe])
+                                                  choices = levels(data_effectif[, libelle_sexe])
+                               ),
+                               div(actionButton(inputId = "go",
+                                                label = "MAJ",
+                                                icon = icon("rotate")
+                               ),
+                               align = "center")
                   ),
-                  mainPanel(
-                    # Ajoutez ici le contenu principal pour "Données départementales"
+                  mainPanel(#partie droite
+                    #decomposition en onglet dans l'affichage principal
+                    tabsetPanel(
+                      tabPanel("Carte",
+                               plotOutput("plot1")
+                      ),
+                      tabPanel("Graphique",
+                               plotOutput("comb_plot_dep")
+                      ),
+                      tabPanel("Data",
+                               dataTableOutput(outputId = "datatable_dep")
+                      )
+                    )
                   )
                 )
               )
