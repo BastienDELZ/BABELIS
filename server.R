@@ -32,7 +32,7 @@ function(input, output, session) {
   output$comb_plot_dep <- renderPlot({
       tot_dep <- data_dep()[, .(effectif_tot = sum(effectif)), by = .(annee)]
       # draw the histogram with the specified number of bins
-      plot1 <- ggplot(data(), aes(x = as.factor(annee), y = effectif, fill = factor(classe_age))) +
+      plot1 <- ggplot(data_dep(), aes(x = as.factor(annee), y = effectif, fill = factor(classe_age))) +
 
         geom_bar(stat = "identity", position = position_dodge(width = 0.9)) +
         labs(x = "Année", y = "Effectif par classe d'âge", fill = "Classe d'âge") +
