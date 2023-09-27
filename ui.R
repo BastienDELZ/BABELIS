@@ -161,7 +161,7 @@ ui <- dashboardPage(
                                    )),
                             column(width = 4,
                                    box(title = "Comparaison", width = NULL, solidHeader = TRUE, status = "warning",
-                                       box(title = "Ile de France : ", width = NULL, status = "warning", infoBoxOutput("customerCountChurn")),
+                                       box(title = "Ile de France : ", width = NULL, status = "warning", infoBoxOutput("jizof") ),
                                        box(title = "Mayotte : ", width = NULL, status = "warning", infoBoxOutput("percentTotalChurn"))
                                    ))
                           )
