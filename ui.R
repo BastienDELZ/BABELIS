@@ -100,7 +100,7 @@ ui <- dashboardPage(
                                                   #a remplacer par levels(test[, libelle_sexe])
                                                   choices = levels(data_effectif[, libelle_sexe])
                                ),
-                               div(actionButton(inputId = "go",
+                               div(actionButton(inputId = "go_dep",
                                                 label = "MAJ",
                                                 icon = icon("rotate")
                                ),
@@ -137,7 +137,12 @@ ui <- dashboardPage(
                                selectInput("departement_info", label = "Département :",
                                            choices = c("Hérault", "J'ai pas d'inspi"), multiple = FALSE),
                                checkboxGroupInput("sexe_info", label = "Sélectionnez le sexe :",
-                                                  choices = c("Femme", "Homme"), selected = "Femme")
+                                                  choices = c("Femme", "Homme"), selected = "Femme"),
+                               div(actionButton(inputId = "go_info",
+                                                label = "MAJ",
+                                                icon = icon("rotate")
+                               ),
+                               align = "center")
                   ),
                   mainPanel(
                     fluidRow(
@@ -149,8 +154,9 @@ ui <- dashboardPage(
                                        box(title = "Homme(s) : ", width = NULL, status = "primary", infoBoxOutput("percentTotalNoFilter"))
                                    )),
                             column(width = 4,
-                                   box(title = "Et en ramenant à la population ?", width = NULL, solidHeader = TRUE, status = "success",
-                                       #box(title = "Number of Customers", width = NULL, status = "success", infoBoxOutput("customerCountStayed")),
+                                   box(title = "Et en ramenant à la population ?", width = NULL, solidHeader = TRUE, status = "success",HTML = "output$texte_info",
+  
+                                       # box(title = "Number of Customers", width = NULL, status = "success", textOutput(outputId = "texte_info")),
                                        #box(title = "Percent of Total Customers", width = NULL, status = "success", infoBoxOutput("percentTotalStayed"))
                                    )),
                             column(width = 4,

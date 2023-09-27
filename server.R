@@ -14,7 +14,7 @@ function(input, output, session) {
   #Utilisation de la fonction réactive pour conserver les paramètres
 
   data_dep <- reactive({
-    input$go
+    input$go_dep
     isolate({
       data_effectif[(profession_sante == input$profession_dep & 
                        annee >= input$periode_dep[1] & 
@@ -75,6 +75,22 @@ function(input, output, session) {
   #     combined_plot <- plot2 / plot1 #plot 2 au dessus du plot 1
   #   })
   # })
+  data_info <- reactive({
+    input$go_info
+    isolate({
+      data_effectif[(profession_sante == input$profession_info & 
+                       annee == max(annee) &
+                       # annee >= input$periode_info[1] & 
+                       # annee <= input$periode_info[2] & 
+                       libelle_region == input$region_info &
+                       libelle_departement == input$departement &
+                       classe_age != "tout_age" & 
+                       libelle_sexe == input$sexe_info), ]
+    })
+  })
+  output$texte_info <- renderText({
+    paste(1, input$profession_info)
+  })
 }
 
 
