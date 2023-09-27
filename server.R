@@ -9,8 +9,6 @@
 
 library(shiny)
 
-#Faire les graphqieu avec les classes d'âges
-
 # Define server logic required to draw a histogram
 function(input, output, session) {
   #Utilisation de la fonction réactive pour conserver les paramètres
