@@ -6,8 +6,12 @@ library(ggplot2)
 library(patchwork) 
 # install.packages("data.table")
 library(data.table)
+
 install.packages("MASS")
 library(MASS)
+
+library(tidyr)
+
 
 # chargement des fonctions
 creat_dta <- function(){
@@ -27,7 +31,7 @@ creat_dta <- function(){
 # chargement des donnees globales
 # options(timeout = max(1000, getOption("timeout")))
 # 
-# demo <- fread(file ="estimation_pop.csv", header = T, stringsAsFactors = T)
+# demo <- fread(file ="/Users/bastiendeleuze/Desktop/Archive projet shiny/shiny/Proj_PrograShiny/estimation_pop.csv", header = T, stringsAsFactors = T)
 # demo_piv <- pivot_longer(demo, cols = starts_with("E"), names_to = "Annee", values_to = "Effectif")
 # demo_piv$Effectif <-gsub("_", "", demo_piv$Effectif)
 # demo_piv$Annee <- substr(demo_piv$Annee, nchar(demo_piv$Annee)-3, nchar(demo_piv$Annee))
@@ -36,6 +40,10 @@ creat_dta <- function(){
 # demo_piv <- demo_piv[, ':=' (annee = factor(annee))]
 # demo_piv <- demo_piv[, Departement := NULL]
 # 
+# write.csv2(demo_piv, file = "demo_piv.csv", row.names =F)
+
+demo_piv <- fread("demo_piv.csv")
+
 # data_effectif <- fread("https://data.opendatasoft.com/api/explore/v2.1/catalog/datasets/demographie-effectifs-et-les-densites@observatoirepathologies-cnam/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B")
 # data_effectif <- data_effectif[libelle_departement!="Tout département"]
 # data_effectif <- data_effectif[libelle_departement!="FRANCE"]

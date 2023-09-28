@@ -18,7 +18,7 @@ ui <- dashboardPage(
       menuItem("Données nationales", tabName = "national"),
       menuItem("Données régionales", tabName = "regional"),
       menuItem("Données départementales", tabName = "departmental"),
-      menuItem("Info", tabName = "info")
+      menuItem("Info",tabName = "info")
     )
   ),
   
@@ -154,14 +154,19 @@ ui <- dashboardPage(
                                        box(title = "Homme(s) : ", width = NULL, status = "primary", infoBoxOutput("percentTotalNoFilter"))
                                    )),
                             column(width = 4,
+
                                    box(title = "Et en ramenant à la population ?", width = NULL, solidHeader = TRUE, status = "success", textOutput(outputId = "texte_info"), textOutput(outputId = "newdta_info"),
                                        
                                        #box(title = "Number of Customers", width = NULL, status = "success", textOutput(outputId = "texte_info")),
+
+                                   box(title = "Et en ramenant à la population ?", width = NULL, solidHeader = TRUE, status = "success",
+                                       box(title = "Number of Customers", width = NULL, status = "success", textOutput(outputId = "texte_info")),
+
                                        #box(title = "Percent of Total Customers", width = NULL, status = "success", infoBoxOutput("percentTotalStayed"))
                                    )),
                             column(width = 4,
                                    box(title = "Comparaison", width = NULL, solidHeader = TRUE, status = "warning",
-                                       box(title = "Ile de France : ", width = NULL, status = "warning", infoBoxOutput("jizof") ),
+                                       box(title = "Ile de France : ", width = NULL, status = "warning", infoBoxOutput("customerCountChurn")),
                                        box(title = "Mayotte : ", width = NULL, status = "warning", infoBoxOutput("percentTotalChurn"))
                                    ))
                           )
@@ -175,5 +180,5 @@ ui <- dashboardPage(
     )
   )
 )
-
+)
 
