@@ -18,7 +18,7 @@ ui <- dashboardPage(
       menuItem("Données nationales", tabName = "national"),
       menuItem("Données régionales", tabName = "regional"),
       menuItem("Données départementales", tabName = "departmental"),
-      menuItem("Info", tabName = "info")
+      menuItem("Info",tabName = "info")
     )
   ),
   
