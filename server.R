@@ -78,21 +78,23 @@ function(input, output, session) {
   data_info <- reactive({
     input$go_info
     isolate({
-      data_effectif[(profession_sante == input$profession_info & 
-                       annee == max(annee) &
-                       # annee >= input$periode_info[1] & 
-                       # annee <= input$periode_info[2] & 
-                       libelle_region == input$region_info &
-                       libelle_departement == input$departement &
-                       classe_age != "tout_age" & 
-                       libelle_sexe == input$sexe_info), ]
+      newdta[(profession_sante == input$profession_info & 
+                annee == max(annee) &
+                # annee >= input$periode_info[1] & 
+                # annee <= input$periode_info[2] & 
+                libelle_region == input$region_info &
+                libelle_departement == input$departement_info &
+                classe_age == "tout_age" & 
+                libelle_sexe == input$sexe_info),
+             .(effectif = round(1/(effectif/Effectif))
+             )]
     })
   })
 
-  newdta_info <- newdta[(libelle_sexe =="tout sexe" & classe_age=="tout_age"), list(effectif = round(1/(effectif/Effectif))), by=list(profession_sante== input$profession_info, annee=max(annee), dep=input$departement_info)]
-  output$texte_info <- renderText({
-    paste(1, input$profession_info, "/", input$newdta_info)
-  })
+  # newdta_info <- newdta[(libelle_sexe =="tout sexe" & classe_age=="tout_age"), list(effectif = round(1/(effectif/Effectif))), by=list(profession_sante== input$profession_info, annee=max(annee), dep=input$departement_info)]
+   output$texte_info <- renderText({ 
+     paste("1", input$profession_info, "/", data_info()[1,1])
+   })
 }
 
 
