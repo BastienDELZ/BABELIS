@@ -82,15 +82,20 @@ newdta <- merge(data_effectif, demo_piv, by = c("annee","Num_dep" ),  all.x = TR
 #une ligne c'est pas un medecin
 
 # test <- newdta[(profession_sante == "Chirurgiens" & 
-#           annee == max(annee) &
-#           # annee >= input$periode_info[1] & 
-#           # annee <= input$periode_info[2] & 
-#           libelle_region == "Occitanie" &
-#           libelle_departement == "Hérault" &
-#           classe_age == "tout_age" & 
-#           libelle_sexe == "femmes"),
-#        .(effectif = round(1/(effectif/Effectif))
-#        )]
-# paste("1",test[1,1])
+#            annee == max(annee) &
+#            libelle_region == "Occitanie" &
+#            libelle_departement != "Hérault" &
+#            classe_age == "tout_age" & 
+#            libelle_sexe == "femmes"),
+#         .(effectif = round(1/(effectif/Effectif))
+#         ), by = libelle_departement]
+
+texte <- ""
+for(i in 1:nrow(newdta_comp_region)){
+  texte <- paste(texte, newdta_comp_region[[i,1]], newdata_comp_region[[i,2]], "\n")
+}
+cat(texte)
+
+
 
 #dta <- merge(data_effectif, demo_piv, by = c("annee","Num_dep"), all.x =T)

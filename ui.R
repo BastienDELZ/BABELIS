@@ -112,10 +112,11 @@ ui <- dashboardPage(
                   mainPanel(#partie droite
                     #decomposition en onglet dans l'affichage principal
                     tabsetPanel(
-                      tabPanel("Carte",
-                               plotOutput("plot1")
+
+                      tabPanel("Carte"
                       ),
                       tabPanel("Graphique",
+                               tags$hr(),
                                plotOutput("comb_plot_dep")
                       ),
                       tabPanel("Data",
