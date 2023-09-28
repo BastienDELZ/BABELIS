@@ -136,12 +136,12 @@ ui <- dashboardPage(
                   sidebarPanel(width = 3,
                                selectInput("profession_info", label = "Profession :",
                                            choices = levels(data_effectif[, profession_sante]), multiple = FALSE),
+
                                selectInput("region_info", label = "Région :",
                                            choices = levels(data_effectif[, libelle_region]), multiple = FALSE),
                                selectInput("departement_info", label = "Département :",
                                            choices = levels(data_effectif[, libelle_departement]), multiple = FALSE),
-                               checkboxGroupInput("sexe_info", label = "Sélectionnez le sexe :",
-                                                  choices = levels(data_effectif[, libelle_sexe])),
+
                                div(actionButton(inputId = "go_info",
                                                 label = "MAJ",
                                                 icon = icon("rotate")
@@ -158,14 +158,16 @@ ui <- dashboardPage(
                                        box(title = "Homme(s) : ", width = NULL, status = "primary", infoBoxOutput("percentTotalNoFilter"))
                                    )),
                             column(width = 4,
-                                   box(title = "Et en ramenant à la population ?", width = NULL, solidHeader = TRUE, status = "success",
-                                       box(title = "Number of Customers", width = NULL, status = "success", textOutput(outputId = "texte_info")),
+
+                                   box(title = "Et en ramenant à la population ?", width = NULL, solidHeader = TRUE, status = "success", textOutput(outputId = "texte_info"),
+                                       
+                                       #box(title = "Number of Customers", width = NULL, status = "success", textOutput(outputId = "texte_info")),
 
                                        #box(title = "Percent of Total Customers", width = NULL, status = "success", infoBoxOutput("percentTotalStayed"))
                                    )),
                             column(width = 4,
                                    box(title = "Comparaison", width = NULL, solidHeader = TRUE, status = "warning",
-                                       box(title = "Ile de France : ", width = NULL, status = "warning", infoBoxOutput("customerCountChurn")),
+                                       box(title = "Ile de France : ", width = NULL, status = "warning", textOutput(outputId = "comparaison_region")),
                                        box(title = "Mayotte : ", width = NULL, status = "warning", infoBoxOutput("percentTotalChurn"))
                                    ))
                           )

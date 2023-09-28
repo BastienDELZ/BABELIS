@@ -75,26 +75,41 @@ function(input, output, session) {
   #     combined_plot <- plot2 / plot1 #plot 2 au dessus du plot 1
   #   })
   # })
-  data_info <- reactive({
+  newdta_info <- reactive({
     input$go_info
     isolate({
       newdta[(profession_sante == input$profession_info & 
-                annee == max(annee) &
-                # annee >= input$periode_info[1] & 
-                # annee <= input$periode_info[2] & 
-                libelle_region == input$region_info &
-                libelle_departement == input$departement_info &
-                classe_age == "tout_age" & 
-                libelle_sexe == input$sexe_info),
-             .(effectif = round(1/(effectif/Effectif))
-             )]
+
+                       annee == max(annee) &
+                       libelle_region == input$region_info &
+                       libelle_departement == input$departement_info &
+                       classe_age == "tout_age" & 
+                       libelle_sexe == "tout sexe"), list(effectif = round(1/(effectif/Effectif)))]
     })
   })
 
-  # newdta_info <- newdta[(libelle_sexe =="tout sexe" & classe_age=="tout_age"), list(effectif = round(1/(effectif/Effectif))), by=list(profession_sante== input$profession_info, annee=max(annee), dep=input$departement_info)]
-   output$texte_info <- renderText({ 
-     paste("1", input$profession_info, "/", data_info()[1,1])
-   })
+  output$texte_info <- renderText({
+    paste(1, input$profession_info, "pour", newdta_info(), "habitants")
+  })
+  
+  newdta_comp_region <- reactive({
+    input$go_info
+    isolate({
+      newdta[(profession_sante == input$profession_info & 
+                
+                annee == max(annee) &
+                libelle_region == input$region_info &
+                libelle_departement != input$departement_info &
+                classe_age == "tout_age" & 
+                libelle_sexe == "tout sexe"), list(effectif = round(1/(effectif/Effectif)), departement = libelle_departement)]
+    })
+  })
+  output$comparaison_region <- renderText ({
+    paste(1, input$profession_info, "pour", newdta_comp_region()[[1,1]], "habitants en" , newdta_comp_region()[[1,2]],
+          1, input$profession_info, "pour", newdta_comp_region()[[2,1]], "habitants en" ,newdta_comp_region()[[2,2]],
+          1, input$profession_info, "pour", newdta_comp_region()[[3,1]], "habitants en" , newdta_comp_region()[[3,2]])
+  })
+
 }
 
 
