@@ -131,13 +131,12 @@ ui <- dashboardPage(
                 sidebarLayout(
                   sidebarPanel(width = 3,
                                selectInput("profession_info", label = "Profession :",
-                                           choices = c("Dentiste", "Rhumatologue"), multiple = FALSE),
+                                           choices = c("Infirmiers", "Rhumatologues"), multiple = FALSE),
                                selectInput("region_info", label = "Région :",
                                            choices = c("Bretagne", "J'ai pas d'inspi"), multiple = FALSE),
                                selectInput("departement_info", label = "Département :",
-                                           choices = c("Hérault", "J'ai pas d'inspi"), multiple = FALSE),
-                               checkboxGroupInput("sexe_info", label = "Sélectionnez le sexe :",
-                                                  choices = c("Femme", "Homme"), selected = "Femme"),
+                                           choices = c("Hérault", "Morbihan", "J'ai pas d'inspi"), multiple = FALSE),
+                               
                                div(actionButton(inputId = "go_info",
                                                 label = "MAJ",
                                                 icon = icon("rotate")
@@ -155,12 +154,9 @@ ui <- dashboardPage(
                                    )),
                             column(width = 4,
 
-                                   box(title = "Et en ramenant à la population ?", width = NULL, solidHeader = TRUE, status = "success", textOutput(outputId = "texte_info"), textOutput(outputId = "newdta_info"),
+                                   box(title = "Et en ramenant à la population ?", width = NULL, solidHeader = TRUE, status = "success", textOutput(outputId = "texte_info"),
                                        
                                        #box(title = "Number of Customers", width = NULL, status = "success", textOutput(outputId = "texte_info")),
-
-                                   box(title = "Et en ramenant à la population ?", width = NULL, solidHeader = TRUE, status = "success",
-                                       box(title = "Number of Customers", width = NULL, status = "success", textOutput(outputId = "texte_info")),
 
                                        #box(title = "Percent of Total Customers", width = NULL, status = "success", infoBoxOutput("percentTotalStayed"))
                                    )),
@@ -180,5 +176,5 @@ ui <- dashboardPage(
     )
   )
 )
-)
+
 
