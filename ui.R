@@ -154,9 +154,9 @@ ui <- dashboardPage(
                                        box(title = "Homme(s) : ", width = NULL, status = "primary", infoBoxOutput("percentTotalNoFilter"))
                                    )),
                             column(width = 4,
-                                   box(title = "Et en ramenant à la population ?", width = NULL, solidHeader = TRUE, status = "success",HTML = "output$texte_info",
-  
-                                       # box(title = "Number of Customers", width = NULL, status = "success", textOutput(outputId = "texte_info")),
+                                   box(title = "Et en ramenant à la population ?", width = NULL, solidHeader = TRUE, status = "success", textOutput(outputId = "texte_info"), textOutput(outputId = "newdta_info"),
+                                       
+                                       #box(title = "Number of Customers", width = NULL, status = "success", textOutput(outputId = "texte_info")),
                                        #box(title = "Percent of Total Customers", width = NULL, status = "success", infoBoxOutput("percentTotalStayed"))
                                    )),
                             column(width = 4,

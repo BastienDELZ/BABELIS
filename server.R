@@ -88,8 +88,10 @@ function(input, output, session) {
                        libelle_sexe == input$sexe_info), ]
     })
   })
+
+  newdta_info <- newdta[(libelle_sexe =="tout sexe" & classe_age=="tout_age"), list(effectif = round(1/(effectif/Effectif))), by=list(profession_sante== input$profession_info, annee=max(annee), dep=input$departement_info)]
   output$texte_info <- renderText({
-    paste(1, input$profession_info)
+    paste(1, input$profession_info, "/", input$newdta_info)
   })
 }
 

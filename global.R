@@ -6,6 +6,8 @@ library(ggplot2)
 library(patchwork) 
 # install.packages("data.table")
 library(data.table)
+install.packages("MASS")
+library(MASS)
 
 # chargement des fonctions
 creat_dta <- function(){
@@ -68,5 +70,8 @@ creat_dta <- function(){
 
 
 data_effectif <-creat_dta()
+newdta <- merge(data_effectif, demo_piv, by = c("Num_dep", "annee"),  all.x = TRUE)
+#une ligne c'est pas un medecin
+
 
 #dta <- merge(data_effectif, demo_piv, by = c("annee","Num_dep"), all.x =T)
