@@ -7,7 +7,7 @@
 #    http://shiny.rstudio.com/
 #
 library(shiny)
-library(shinydashboard)
+
 
 ui <- dashboardPage(
   dashboardHeader(title = "Application"),
@@ -68,14 +68,15 @@ ui <- dashboardPage(
                   sidebarPanel(width = 3,
                                h3("Critères", align ="center"),
                                tags$hr(),
-                               sliderInput("periode_dep", # se sera input$periode_dep dans le serveur
-                                           label = "Choisissez une période",
-                                           value = c(2010, 2021),#valeur de base affichée par défaut
-                                           min = min(data_effectif[, annee]),
-                                           max = max(data_effectif[, annee]),
-                                           step = 1,
-                                           #Utiliser pour ne pas avoir de virgule en séparateur de millier
-                                           sep =""
+                               sliderInput(
+                                 inputId ="periode_dep", # se sera input$periode_dep dans le serveur
+                                 label = "Choisissez une période",
+                                 value = c(2010, 2021),#valeur de base affichée par défaut
+                                 min = min(data_effectif[, annee]),
+                                 max = max(data_effectif[, annee]),
+                                 step = 1,
+                                 #Utiliser pour ne pas avoir de virgule en séparateur de millier
+                                 sep =""
                                ),
                                selectInput(
                                  inputId = "profession_dep",
@@ -93,16 +94,18 @@ ui <- dashboardPage(
                                  #Pemert le choix de plusieurs departement <- a discuter
                                  multiple = F
                                ),
-                               checkboxGroupInput(inputId = "sexe_dep", 
-                                                  label = "Please select", 
-                                                  #a remplacer par levels(test[, libelle_sexe])
-                                                  selected = "F",
-                                                  #a remplacer par levels(test[, libelle_sexe])
-                                                  choices = levels(data_effectif[, libelle_sexe])
+                               checkboxGroupInput(
+                                 inputId = "sexe_dep", 
+                                 label = "Please select", 
+                                 #a remplacer par levels(test[, libelle_sexe])
+                                 selected = "F",
+                                 #a remplacer par levels(test[, libelle_sexe])
+                                 choices = levels(data_effectif[, libelle_sexe])
                                ),
-                               div(actionButton(inputId = "go_dep",
-                                                label = "MAJ",
-                                                icon = icon("rotate")
+                               div(actionButton(
+                                 inputId = "go_dep",
+                                 label = "MAJ",
+                                 icon = icon("rotate")
                                ),
                                align = "center")
                   ),
@@ -131,12 +134,13 @@ ui <- dashboardPage(
                 sidebarLayout(
                   sidebarPanel(width = 3,
                                selectInput("profession_info", label = "Profession :",
-                                           choices = c("Infirmiers", "Rhumatologues"), multiple = FALSE),
+                                           choices = levels(data_effectif[, profession_sante]), multiple = FALSE),
+
                                selectInput("region_info", label = "Région :",
-                                           choices = c("Bretagne", "J'ai pas d'inspi"), multiple = FALSE),
+                                           choices = levels(data_effectif[, libelle_region]), multiple = FALSE),
                                selectInput("departement_info", label = "Département :",
-                                           choices = c("Hérault", "Morbihan", "J'ai pas d'inspi"), multiple = FALSE),
-                               
+                                           choices = levels(data_effectif[, libelle_departement]), multiple = FALSE),
+
                                div(actionButton(inputId = "go_info",
                                                 label = "MAJ",
                                                 icon = icon("rotate")

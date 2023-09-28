@@ -79,6 +79,7 @@ function(input, output, session) {
     input$go_info
     isolate({
       newdta[(profession_sante == input$profession_info & 
+
                        annee == max(annee) &
                        libelle_region == input$region_info &
                        libelle_departement == input$departement_info &
@@ -90,6 +91,7 @@ function(input, output, session) {
   output$texte_info <- renderText({
     paste(1, input$profession_info, "pour", newdta_info(), "habitants")
   })
+
 }
 
 

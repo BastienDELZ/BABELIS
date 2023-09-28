@@ -7,9 +7,11 @@ library(patchwork)
 # install.packages("data.table")
 library(data.table)
 
-#install.packages("MASS")
-library(MASS)
 
+#install.packages("MASS")
+
+library(MASS)
+library(shinydashboard)
 library(tidyr)
 
 
@@ -78,8 +80,19 @@ demo_piv <- fread("demo_piv.csv")
 
 
 data_effectif <-creat_dta()
-newdta <- merge(data_effectif, demo_piv, by = c("Num_dep", "annee"),  all.x = TRUE)
+newdta <- merge(data_effectif, demo_piv, by = c("annee","Num_dep" ),  all.x = TRUE)
 #une ligne c'est pas un medecin
 
+# test <- newdta[(profession_sante == "Chirurgiens" & 
+#           annee == max(annee) &
+#           # annee >= input$periode_info[1] & 
+#           # annee <= input$periode_info[2] & 
+#           libelle_region == "Occitanie" &
+#           libelle_departement == "Hérault" &
+#           classe_age == "tout_age" & 
+#           libelle_sexe == "femmes"),
+#        .(effectif = round(1/(effectif/Effectif))
+#        )]
+# paste("1",test[1,1])
 
 #dta <- merge(data_effectif, demo_piv, by = c("annee","Num_dep"), all.x =T)
