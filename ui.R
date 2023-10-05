@@ -113,7 +113,11 @@ ui <- dashboardPage(
                     #decomposition en onglet dans l'affichage principal
                     tabsetPanel(
 
-                      tabPanel("Carte"
+                      tabPanel("Carte",
+                               leafletOutput("carte_region")
+                                 
+                               
+                               
                       ),
                       tabPanel("Graphique",
                                tags$hr(),
@@ -150,25 +154,21 @@ ui <- dashboardPage(
                   ),
                   mainPanel(
                     fluidRow(
-                      box(title = "Région", width = 12, solidHeader = TRUE, status = "primary", color = "#286192",
+                      box(title = textOutput(outputId = "region_info"), width = 12, solidHeader = TRUE, status = "primary", color = "#286192",
                           fluidRow(
-                            column(width = 4,
-                                   box(title = "Nombre de dentistes", width = NULL, solidHeader = TRUE, status = "primary",
-                                       box(title = "Femme(s) : ", width = NULL, status = "primary", infoBoxOutput("customerCountNoFilter")),
-                                       box(title = "Homme(s) : ", width = NULL, status = "primary", infoBoxOutput("percentTotalNoFilter"))
-                                   )),
+                            
                             column(width = 4,
 
-                                   box(title = "Et en ramenant à la population ?", width = NULL, solidHeader = TRUE, status = "success", textOutput(outputId = "texte_info"),
+                                   box(title = textOutput(outputId = "nb_info"), width = NULL, solidHeader = TRUE, status = "success", textOutput(outputId = "texte_info"),
                                        
                                        #box(title = "Number of Customers", width = NULL, status = "success", textOutput(outputId = "texte_info")),
 
                                        #box(title = "Percent of Total Customers", width = NULL, status = "success", infoBoxOutput("percentTotalStayed"))
                                    )),
-                            column(width = 4,
+                            column(width = 8,
                                    box(title = "Comparaison", width = NULL, solidHeader = TRUE, status = "warning",
-                                       box(title = "Ile de France : ", width = NULL, status = "warning", textOutput(outputId = "comparaison_region")),
-                                       box(title = "Mayotte : ", width = NULL, status = "warning", infoBoxOutput("percentTotalChurn"))
+                                       box(title = "Autres départements de la région : ", width = NULL, status = "warning", htmlOutput(outputId = "comparaison_region")),
+                                       
                                    ))
                           )
                           

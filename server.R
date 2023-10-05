@@ -12,7 +12,7 @@ library(shiny)
 # Define server logic required to draw a histogram
 function(input, output, session) {
   #Utilisation de la fonction réactive pour conserver les paramètres
-
+  
   data_dep <- reactive({
     input$go_dep
     isolate({
@@ -27,29 +27,30 @@ function(input, output, session) {
   output$datatable_dep <- renderDataTable({
     data_dep()
   })
-
+  
   output$comb_plot_dep <- renderPlot({
-      tot_dep <- data_dep()[, .(effectif_tot = sum(effectif)), by = .(annee)]
-      # draw the histogram with the specified number of bins
-      plot1 <- ggplot(data_dep(), aes(x = as.factor(annee), y = effectif, fill = factor(classe_age))) +
-
-        geom_bar(stat = "identity", position = position_dodge(width = 0.9)) +
-        labs(x = "Année", y = "Effectif par classe d'âge", fill = "Classe d'âge") +
-        theme_minimal() +
-        theme(plot.margin = unit(c(5.5, 5.5, 0, 5.5), "pt"))
+    tot_dep <- data_dep()[, .(effectif_tot = sum(effectif)), by = .(annee)]
+    # draw the histogram with the specified number of bins
+    plot1 <- ggplot(data_dep(), aes(x = as.factor(annee), y = effectif, fill = factor(classe_age))) +
       
-      plot2 <- ggplot(tot_dep, aes(x = as.factor(annee), y = effectif_tot)) +
-        geom_point() +
-        labs(x = "Année", y = "Effectif total") +
-        theme_minimal() +
-        theme(axis.text.x = element_blank(),
-              axis.ticks.x = element_blank(),
-              axis.title.x = element_blank(),
-              plot.margin = unit(c(5.5, 5.5, 0, 5.5), "pt"))
-      # faire un autre graphique avec les indicateurs de population (taux)
-      combined_plot <- plot2 / plot1 #plot 2 au dessus du plot 1
-      combined_plot
-      })
+      geom_bar(stat = "identity", position = position_dodge(width = 0.9)) +
+      labs(x = "Année", y = "Effectif par classe d'âge", fill = "Classe d'âge") +
+      theme_minimal() +
+      theme(plot.margin = unit(c(5.5, 5.5, 0, 5.5), "pt"))
+    
+    plot2 <- ggplot(tot_dep, aes(x = as.factor(annee), y = effectif_tot)) +
+      geom_point() +
+      labs(x = "Année", y = "Effectif total") +
+      theme_minimal() +
+      theme(axis.text.x = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.title.x = element_blank(),
+            plot.margin = unit(c(5.5, 5.5, 0, 5.5), "pt"))
+    # faire un autre graphique avec les indicateurs de population (taux)
+    combined_plot <- plot2 / plot1 #plot 2 au dessus du plot 1
+    combined_plot
+  })
+  
   
   # data_reg <- reactive({data_effectif[(profession_sante %in% input$profession_reg & annee %in% range(input$periode_reg[1]:input$periode_reg[2])), ]})
   # 
@@ -75,19 +76,22 @@ function(input, output, session) {
   #     combined_plot <- plot2 / plot1 #plot 2 au dessus du plot 1
   #   })
   # })
+  
+  
+  
   newdta_info <- reactive({
     input$go_info
     isolate({
       newdta[(profession_sante == input$profession_info & 
-
-                       annee == max(annee) &
-                       libelle_region == input$region_info &
-                       libelle_departement == input$departement_info &
-                       classe_age == "tout_age" & 
-                       libelle_sexe == "tout sexe"), list(effectif = round(1/(effectif/Effectif)))]
+                
+                annee == max(annee) &
+                libelle_region == input$region_info &
+                libelle_departement == input$departement_info &
+                classe_age == "tout_age" & 
+                libelle_sexe == "tout sexe"), list(effectif = round(1/(effectif/Effectif)))]
     })
   })
-
+  
   output$texte_info <- renderText({
     paste(1, input$profession_info, "pour", newdta_info(), "habitants")
   })
@@ -104,15 +108,74 @@ function(input, output, session) {
                 libelle_sexe == "tout sexe"), list(effectif = round(1/(effectif/Effectif)), departement = libelle_departement)]
     })
   })
-  output$comparaison_region <- renderText ({
-    paste(1, input$profession_info, "pour", newdta_comp_region()[[1,1]], "habitants en" , newdta_comp_region()[[1,2]],
-          1, input$profession_info, "pour", newdta_comp_region()[[2,1]], "habitants en" ,newdta_comp_region()[[2,2]],
-          1, input$profession_info, "pour", newdta_comp_region()[[3,1]], "habitants en" , newdta_comp_region()[[3,2]])
+  
+  output$comparaison_region <- renderText({
+    texte <- ""
+    for(i in 1:nrow(newdta_comp_region())){
+      if (is.infinite(newdta_comp_region()[[i,1]])){
+        ntext <- paste(newdta_comp_region()[[i,2]], " : Données manquantes pour les",input$profession_info)
+      } else{
+        ntext <- paste(newdta_comp_region()[[i,2]], " :" ,1, input$profession_info, "pour", newdta_comp_region()[[i,1]] , "hab", "\n")
+      }
+      texte <- paste(texte,ntext, sep = '<br/>')
+    }
+    HTML(texte)
+    
+  })
+  
+  output$region_info <- renderText({
+    input$go_info
+    isolate({
+      input$region_info
+    })
+  })
+  
+  output$nb_info <- renderText({
+    input$go_info
+    isolate({
+      paste("Nombre de ", input$profession_info, "ramené à la population")
+    })
+  })
+  
+  # 
+  # data_carte_region <- reactive({
+  #   
+  #   isolate({
+  #     newdta[(profession_sante == input$profession_dep & 
+  #               annee == max(annee) &
+  #               classe_age == "tout_age"), list(effectif = round(1/(effectif/Effectif))), by= libelle_departement]
+  #   })
+  # })
+  # 
+  # output$carte_region <- renderLeaflet({
+  #   qpal <- colorQuantile(palette = "YlGnBu",n=5,domain = data_carte_region()$effectif[!is.infinite(data_carte_region()$effectif)])
+  #   leaflet(data_carte) %>% addTiles() %>% addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity=0.5,fillColor = ~qpal(data_carte_region()$effectif)) 
+  #   #addProviderTiles
+  # })
+
+  
+  data_carte_region <- reactive({
+    input$go_dep
+    isolate({
+      a <- newdta[(profession_sante == input$profession_dep &
+                annee == max(annee) &
+                classe_age == "tout_age" & libelle_sexe=="tout sexe"), list(eff = round(1/(s_par_region/S_EFF_region))), by= libelle_departement]
+      indices_tri <- match(data_carte$NAME_2, a$libelle_departement)
+      a <- a[indices_tri, ]
+      })
   })
 
+  output$carte_region <- renderLeaflet({
+    #qpal <- colorNumeric(palette = "YlGnBu", domain = data_carte_region()$eff[!is.infinite(data_carte_region()$eff)])
+    #qpal <- colorBin(palette = "YlGnBu", domain = data_carte_region()$eff[!is.infinite(data_carte_region()$eff)], bins = 5)
+    qpal <- colorQuantile(palette = "YlGnBu",n=5,domain = data_carte_region()$eff[!is.infinite(data_carte_region()$eff)])
+    leaflet(data_carte) %>% addTiles() %>% addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity=0.5,fillColor = ~qpal(data_carte_region()$eff)) %>% 
+    addLegend(pal = qpal, values = ~data_carte_region()$eff, opacity = 1)
+    #addProviderTiles
+  })
+  
 }
-
-
-
-
+  
+  
+  
   

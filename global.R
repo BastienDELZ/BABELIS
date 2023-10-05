@@ -6,10 +6,11 @@ library(ggplot2)
 library(patchwork) 
 # install.packages("data.table")
 library(data.table)
-
-
+#install.packages("leaflet")
+library(leaflet)
 #install.packages("MASS")
-
+#install.packages("sf")
+library(sf)
 library(MASS)
 library(shinydashboard)
 library(tidyr)
@@ -46,6 +47,9 @@ creat_dta <- function(){
 
 demo_piv <- fread("demo_piv.csv")
 
+
+data_carte <- readRDS("gadm36_FRA_2_sf.rds")
+
 # data_effectif <- fread("https://data.opendatasoft.com/api/explore/v2.1/catalog/datasets/demographie-effectifs-et-les-densites@observatoirepathologies-cnam/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B")
 # data_effectif <- data_effectif[libelle_departement!="Tout département"]
 # data_effectif <- data_effectif[libelle_departement!="FRANCE"]
@@ -81,6 +85,13 @@ demo_piv <- fread("demo_piv.csv")
 
 data_effectif <-creat_dta()
 newdta <- merge(data_effectif, demo_piv, by = c("annee","Num_dep" ),  all.x = TRUE)
+
+#newdta <- newdta[, ':=' (s_par_region = [, sum(effectif), by = libelle_region ])]
+newdta <-newdta[, s_par_region := sum(effectif), by = list(libelle_region, profession_sante, classe_age, annee, libelle_sexe)]
+newdta <-newdta[, S_EFF_region := sum(Effectif), by = list(libelle_region, profession_sante, classe_age, annee, libelle_sexe )]
+
+
+
 #une ligne c'est pas un medecin
 
 # test <- newdta[(profession_sante == "Chirurgiens" & 
@@ -92,11 +103,7 @@ newdta <- merge(data_effectif, demo_piv, by = c("annee","Num_dep" ),  all.x = TR
 #         .(effectif = round(1/(effectif/Effectif))
 #         ), by = libelle_departement]
 
-texte <- ""
-for(i in 1:nrow(newdta_comp_region)){
-  texte <- paste(texte, newdta_comp_region[[i,1]], newdata_comp_region[[i,2]], "\n")
-}
-cat(texte)
+
 
 
 
