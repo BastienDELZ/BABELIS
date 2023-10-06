@@ -13,6 +13,7 @@ library(data.table)
 library(MASS)
 library(shinydashboard)
 library(tidyr)
+library(highcharter)
 
 
 # chargement des fonctions
@@ -29,6 +30,11 @@ creat_dta <- function(){
   return(data)
 } 
 
+nvx_classe_age <- function(data.table){
+  data.table[,class_age_num := .GRP, by = classe_age]
+  return(data.table)
+}
+
 
 # chargement des donnees globales
 # options(timeout = max(1000, getOption("timeout")))
@@ -43,8 +49,6 @@ creat_dta <- function(){
 # demo_piv <- demo_piv[, Departement := NULL]
 # 
 # write.csv2(demo_piv, file = "demo_piv.csv", row.names =F)
-
-demo_piv <- fread("demo_piv.csv")
 
 # data_effectif <- fread("https://data.opendatasoft.com/api/explore/v2.1/catalog/datasets/demographie-effectifs-et-les-densites@observatoirepathologies-cnam/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B")
 # data_effectif <- data_effectif[libelle_departement!="Tout département"]
@@ -78,26 +82,110 @@ demo_piv <- fread("demo_piv.csv")
 # dta_7 <- data_effectif[(split_6+1):nrow(data_effectif),]
 # write.csv2(dta_7, file = "dta_7.csv", row.names =F)
 
+# honoraires <- fread("https://data.opendatasoft.com/api/explore/v2.1/catalog/datasets/honoraires@observatoirepathologies-cnam/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B")
+# honoraires <- honoraires[libelle_departement!="Tout département"]
+# honoraires <- honoraires[libelle_departement!="FRANCE"]
+# honoraires <- setnames(honoraires, old = c(1), new = c("annee"))
+# honoraires <- setnames(honoraires, old = c("departement"), new = c("Num_dep"))
+# honoraires[,  ':=' (annee = factor(annee), Num_dep = factor(Num_dep))]
+# honoraires <- honoraires[, c(3:4,6:8,11:26) := NULL]
+# write.csv2(honoraires, file = "dta_hono.csv", row.names =F)
+
+# patient <- fread("https://data.opendatasoft.com/api/explore/v2.1/catalog/datasets/patientele@observatoirepathologies-cnam/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B")
+# patient <- patient[libelle_departement!="Tout département"]
+# patient <- patient[libelle_departement!="FRANCE"]
+# patient <- setnames(patient, old = c(1), new = c("annee"))
+# patient <- setnames(patient, old = c("departement"), new = c("Num_dep"))
+# patient <- patient[, c(3:4,6,8:13) := NULL]
+# write.csv2(patient, file = "dta_pat.csv", row.names =F)
+
 
 data_effectif <-creat_dta()
-newdta <- merge(data_effectif, demo_piv, by = c("annee","Num_dep" ),  all.x = TRUE)
+dta_hono <- fread("dta_hono.csv",
+                  na.string = c("NS", "NA", "na"))
+dta_hono[,':=' (annee = as.integer(annee), 
+                Num_dep = as.character(Num_dep), 
+                profession_sante =factor(profession_sante),
+                hono_sans_depassement_moyens = as.numeric(hono_sans_depassement_moyens), 
+                depassements_moyens = as.numeric(depassements_moyens))]
+dta_pat <- fread("dta_pat.csv",
+                 na.string = c("NS", "NA", "na"))
+dta_pat[,':=' (Num_dep = as.character(Num_dep),
+               nombre_patients_uniques = as.numeric(nombre_patients_uniques))]
+demo_piv <- fread("demo_piv.csv")
+newdata <- merge(data_effectif, demo_piv, by = c("annee","Num_dep" ),  all.x = TRUE)
+newdata2 <- merge(newdata, dta_hono, by = c("annee","profession_sante","Num_dep" ),  all.x = TRUE)
+newdta <- merge(newdata2, dta_pat, by = c("annee","profession_sante","Num_dep" ),  all.x = TRUE)
+
 #une ligne c'est pas un medecin
 
-# test <- newdta[(profession_sante == "Chirurgiens" & 
-#            annee == max(annee) &
-#            libelle_region == "Occitanie" &
-#            libelle_departement != "Hérault" &
-#            classe_age == "tout_age" & 
-#            libelle_sexe == "femmes"),
-#         .(effectif = round(1/(effectif/Effectif))
-#         ), by = libelle_departement]
 
-texte <- ""
-for(i in 1:nrow(newdta_comp_region)){
-  texte <- paste(texte, newdta_comp_region[[i,1]], newdata_comp_region[[i,2]], "\n")
-}
-cat(texte)
+# texte <- ""
+# for(i in 1:nrow(test)){
+#   texte <- paste(texte, test[[i,1]], newdata_comp_region[[i,2]], "\n")
+# }
+# cat(texte)
 
 
 
 #dta <- merge(data_effectif, demo_piv, by = c("annee","Num_dep"), all.x =T)
+
+# library(highcharter)
+# 
+# # Données
+# # Données
+# categories <- c('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+#                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
+# precipitation <- c(27.6, 28.8, 21.7, 34.1, 29.0, 28.4, 45.6, 51.7, 39.0,
+#                    60.0, 28.6, 32.1)
+# temperature <- c(-13.6, -14.9, -5.8, -0.7, 3.1, 13.0, 14.5, 10.8, 5.8,
+#                  -0.7, -11.0, -16.4)
+# 
+# # Création du graphique
+# highchart() %>%
+#   hc_chart(type = "column") %>%
+#   hc_title(text = "Karasjok weather, 2021", align = "left") %>%
+#   hc_subtitle(text = 'Source: <a href="https://www.yr.no/nb/historikk/graf/5-97251/Norge/Troms%20og%20Finnmark/Karasjok/Karasjok?q=2021" target="_blank">YR</a>', align = "left") %>%
+#   hc_xAxis(categories = list(categories = categories, crosshair = TRUE)) %>%
+#   hc_yAxis(
+#     list(
+#       title = list(text = "Precipitation"),
+#       labels = list(format = "{value} mm"),
+#       opposite = TRUE
+#     ),
+#     list(
+#       title = list(text = "Temperature"),
+#       labels = list(format = "{value}°C"),
+#       opposite = FALSE
+#     )
+#   ) %>%
+#   hc_tooltip(shared = TRUE) %>%
+#   hc_legend(
+#     align = "left",
+#     x = 80,
+#     verticalAlign = "top",
+#     y = 60,
+#     floating = TRUE,
+#     backgroundColor = "rgba(255,255,255,0.25)"
+#   ) %>%
+#   hc_add_series(
+#     list(
+#       name = "Precipitation",
+#       type = "column",
+#       yAxis = 1,
+#       data = precipitation,
+#       tooltip = list(valueSuffix = " mm")
+#     )
+#   ) %>%
+#   hc_add_series(
+#     list(
+#       name = "Temperature",
+#       type = "spline",
+#       data = temperature,
+#       tooltip = list(valueSuffix = "°C")
+#     )
+#   )
+
+
+
+

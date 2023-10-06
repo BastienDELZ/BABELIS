@@ -65,7 +65,7 @@ ui <- dashboardPage(
               fluidPage(
                 headerPanel("Données départementales"),
                 sidebarLayout(
-                  sidebarPanel(width = 3,
+                  sidebarPanel(width = 2,
                                h3("Critères", align ="center"),
                                tags$hr(),
                                sliderInput(
@@ -80,11 +80,20 @@ ui <- dashboardPage(
                                ),
                                selectInput(
                                  inputId = "profession_dep",
-                                 label = "Profession(s) libérale(s) :",
+                                 label = "Profession libérale d'intérêt:",
                                  #a remplacer par levels(data_effectif[, profession_sante])
                                  choices = levels(data_effectif[, profession_sante]),
                                  #Pemert le choix de plusieurs professions <- a discuter
-                                 multiple = F
+                                 multiple = F,
+                                 selected = "Chirurgiens"
+                               ),
+                               selectInput(
+                                 inputId = "profession_dep_comp",
+                                 label = "Profession libérale d'intérêt:",
+                                 #a remplacer par levels(data_effectif[, profession_sante])
+                                 choices = levels(data_effectif[, profession_sante]),
+                                 #Pemert le choix de plusieurs professions <- a discuter
+                                 multiple = T
                                ),
                                selectInput(
                                  inputId = "departement",
@@ -92,7 +101,8 @@ ui <- dashboardPage(
                                  #a remplacer par levels(data_effectif[, libelle_departement])
                                  choices = levels(data_effectif[, libelle_departement]),
                                  #Pemert le choix de plusieurs departement <- a discuter
-                                 multiple = F
+                                 multiple = F,
+                                 selected = "Hérault"
                                ),
                                checkboxGroupInput(
                                  inputId = "sexe_dep", 
@@ -109,7 +119,7 @@ ui <- dashboardPage(
                                ),
                                align = "center")
                   ),
-                  mainPanel(#partie droite
+                  mainPanel(width =10,#partie droite
                     #decomposition en onglet dans l'affichage principal
                     tabsetPanel(
 
@@ -117,7 +127,25 @@ ui <- dashboardPage(
                       ),
                       tabPanel("Graphique",
                                tags$hr(),
-                               plotOutput("comb_plot_dep")
+                               fluidRow(
+                                 box(title = "A adapter avec un textOutput",
+                                     width = 12,
+                                     #plotOutput("comb_plot_dep")
+                                     highchartOutput("comb_plot_dep"))),
+                               fluidRow(
+                                 box(title = "A adapter avec un textOutput",
+                                     width = 6,
+                                     plotOutput("pyr_dep")),
+                                 box(title = "A adapter avec un textOutput",
+                                     width = 6,
+                                     highchartOutput("comp_pro_dep"))
+                                 ),
+                               fluidRow(
+                                 box(title = "A adapter avec un textOutput",
+                                     width = 12,
+                                     #plotOutput("comb_plot_dep")
+                                     highchartOutput("hono_patien")))
+
                       ),
                       tabPanel("Data",
                                dataTableOutput(outputId = "datatable_dep")
@@ -140,7 +168,7 @@ ui <- dashboardPage(
                                selectInput("region_info", label = "Région :",
                                            choices = levels(data_effectif[, libelle_region]), multiple = FALSE),
                                selectInput("departement_info", label = "Département :",
-                                           choices = levels(data_effectif[, libelle_departement]), multiple = FALSE),
+                                           choices = levels(data_effectif[, libelle_departement]), multiple = FALSE, selected = "Hérault"),
 
                                div(actionButton(inputId = "go_info",
                                                 label = "MAJ",
@@ -159,7 +187,7 @@ ui <- dashboardPage(
                                    )),
                             column(width = 4,
 
-                                   box(title = "Et en ramenant à la population ?", width = NULL, solidHeader = TRUE, status = "success", textOutput(outputId = "texte_info"),
+                                   box(title = "Et en ramenant à la population ?", width = NULL, solidHeader = TRUE, status = "success", textOutput(outputId = "texte_info")
                                        
                                        #box(title = "Number of Customers", width = NULL, status = "success", textOutput(outputId = "texte_info")),
 
@@ -167,7 +195,7 @@ ui <- dashboardPage(
                                    )),
                             column(width = 4,
                                    box(title = "Comparaison", width = NULL, solidHeader = TRUE, status = "warning",
-                                       box(title = "Ile de France : ", width = NULL, status = "warning", textOutput(outputId = "comparaison_region")),
+                                       box(title = "Ile de France : ", width = NULL, status = "warning", htmlOutput(outputId = "comparaison_region")),
                                        box(title = "Mayotte : ", width = NULL, status = "warning", infoBoxOutput("percentTotalChurn"))
                                    ))
                           )
