@@ -6,10 +6,11 @@ library(ggplot2)
 library(patchwork) 
 # install.packages("data.table")
 library(data.table)
-
-
+#install.packages("leaflet")
+library(leaflet)
 #install.packages("MASS")
-
+#install.packages("sf")
+library(sf)
 library(MASS)
 library(shinydashboard)
 library(tidyr)
@@ -49,6 +50,8 @@ nvx_classe_age <- function(data.table){
 # demo_piv <- demo_piv[, Departement := NULL]
 # 
 # write.csv2(demo_piv, file = "demo_piv.csv", row.names =F)
+
+data_carte <- readRDS("gadm36_FRA_2_sf.rds")
 
 # data_effectif <- fread("https://data.opendatasoft.com/api/explore/v2.1/catalog/datasets/demographie-effectifs-et-les-densites@observatoirepathologies-cnam/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B")
 # data_effectif <- data_effectif[libelle_departement!="Tout département"]
@@ -116,9 +119,7 @@ demo_piv <- fread("demo_piv.csv")
 newdata <- merge(data_effectif, demo_piv, by = c("annee","Num_dep" ),  all.x = TRUE)
 newdata2 <- merge(newdata, dta_hono, by = c("annee","profession_sante","Num_dep" ),  all.x = TRUE)
 newdta <- merge(newdata2, dta_pat, by = c("annee","profession_sante","Num_dep" ),  all.x = TRUE)
-
-#une ligne c'est pas un medecin
-
+newdta <-newdta[, ':=' (s_par_region =sum(effectif), S_EFF_region = sum(Effectif)), by = list(libelle_region, profession_sante, classe_age, annee, libelle_sexe)]
 
 # texte <- ""
 # for(i in 1:nrow(test)){
@@ -185,6 +186,7 @@ newdta <- merge(newdata2, dta_pat, by = c("annee","profession_sante","Num_dep" )
 #       tooltip = list(valueSuffix = "°C")
 #     )
 #   )
+
 
 
 
