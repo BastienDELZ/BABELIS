@@ -17,7 +17,7 @@ ui <- dashboardPage(
       id = "tabs",
       menuItem("Données nationales", tabName = "national"),
       menuItem("Données régionales", tabName = "regional"),
-      menuItem("Données départementales", tabName = "departmental"),
+      menuItem("Données départementales", tabName = "departemental"),
       menuItem("Info",tabName = "info")
     )
   ),
@@ -61,15 +61,21 @@ ui <- dashboardPage(
       ),
       
       # Onglet "Données départementales"
-      tabItem(tabName = "departmental",
+      tabItem(tabName = "departemental",
               fluidPage(
                 headerPanel("Données départementales"),
                 sidebarLayout(
                   sidebarPanel(width = 2,
                                h3("Critères", align ="center"),
                                tags$hr(),
+                               radioButtons(
+                                 inputId = "echelle",
+                                 label = "Echelle géographique",
+                                 selected = 5,
+                                 choices = c("Régionale" = 4, "Départementale" = 5)
+                               ),
                                sliderInput(
-                                 inputId ="periode_dep", # se sera input$periode_dep dans le serveur
+                                 inputId ="periode", # se sera input$periode_dep dans le serveur
                                  label = "Choisissez une période",
                                  value = c(2010, 2021),#valeur de base affichée par défaut
                                  min = min(data_effectif[, annee]),
@@ -79,7 +85,7 @@ ui <- dashboardPage(
                                  sep =""
                                ),
                                selectInput(
-                                 inputId = "profession_dep",
+                                 inputId = "profession",
                                  label = "Profession libérale d'intérêt:",
                                  #a remplacer par levels(data_effectif[, profession_sante])
                                  choices = levels(data_effectif[, profession_sante]),
@@ -88,24 +94,38 @@ ui <- dashboardPage(
                                  selected = "Chirurgiens"
                                ),
                                selectInput(
-                                 inputId = "profession_dep_comp",
-                                 label = "Profession libérale d'intérêt:",
+                                 inputId = "profession_comp",
+                                 label = "Profession libérale à comparer:",
                                  #a remplacer par levels(data_effectif[, profession_sante])
                                  choices = levels(data_effectif[, profession_sante]),
                                  #Pemert le choix de plusieurs professions <- a discuter
                                  multiple = T
                                ),
-                               selectInput(
-                                 inputId = "departement",
-                                 label = "Département(s) à rechercher :",
-                                 #a remplacer par levels(data_effectif[, libelle_departement])
-                                 choices = levels(data_effectif[, libelle_departement]),
-                                 #Pemert le choix de plusieurs departement <- a discuter
-                                 multiple = F,
-                                 selected = "Hérault"
+                               conditionalPanel(
+                                 condition = "input.echelle == '4'",
+                                 selectInput(
+                                   inputId = "region",
+                                   label = "Région à rechercher :",
+                                   #a remplacer par levels(data_effectif[, libelle_departement])
+                                   choices = levels(data_effectif[, libelle_region]),
+                                   #Pemert le choix de plusieurs departement <- a discuter
+                                   multiple = F,
+                                 )
+                               ),
+                               conditionalPanel(
+                                 condition = "input.echelle == '5'",
+                                 selectInput(
+                                   inputId = "departement",
+                                   label = "Département à rechercher :",
+                                   #a remplacer par levels(data_effectif[, libelle_departement])
+                                   choices = levels(data_effectif[, libelle_departement]),
+                                   #Pemert le choix de plusieurs departement <- a discuter
+                                   multiple = F,
+                                   selected = "Hérault"
+                                 )
                                ),
                                checkboxGroupInput(
-                                 inputId = "sexe_dep", 
+                                 inputId = "sexe", 
                                  label = "Please select", 
                                  #a remplacer par levels(test[, libelle_sexe])
                                  selected = "F",
@@ -113,45 +133,50 @@ ui <- dashboardPage(
                                  choices = levels(data_effectif[, libelle_sexe])
                                ),
                                div(actionButton(
-                                 inputId = "go_dep",
+                                 inputId = "go",
                                  label = "MAJ",
                                  icon = icon("rotate")
                                ),
                                align = "center")
                   ),
-                  mainPanel(width =10,#partie droite
+                  mainPanel(width =10,#partie droit
+                            conditionalPanel(condition = "input.echelle = '5'",
+                                             tabsetPanel(
+                                               tabPanel("Carte",
+                                                        leafletOutput("carte_region"),
+                                                        textOutput("scale")
+                                               ),
+                                               tabPanel("Graphique",
+                                                        tags$hr(),
+                                                        fluidRow(
+                                                          box(title = "A adapter avec un textOutput",
+                                                              width = 12,
+                                                              #plotOutput("comb_plot_dep")
+                                                              highchartOutput("comb_plot_dep"))),
+                                                        fluidRow(
+                                                          box(title = "A adapter avec un textOutput",
+                                                              width = 6,
+                                                              plotOutput("pyr_dep")),
+                                                          box(title = "A adapter avec un textOutput",
+                                                              width = 6,
+                                                              highchartOutput("comp_pro_dep"))
+                                                        ),
+                                                        fluidRow(
+                                                          box(title = "A adapter avec un textOutput",
+                                                              width = 12,
+                                                              #plotOutput("comb_plot_dep")
+                                                              highchartOutput("hono_patien")))
+                                                        
+                                               ),
+                                               tabPanel("Data",
+                                                        dataTableOutput(outputId = "datatable_dep")
+                                               )
+                                             )
+                                             ),
+                            conditionalPanel(condition = "input.echelle == '4'",
+                                             h4("Éléments pour l'Option 2"))
                             #decomposition en onglet dans l'affichage principal
-                            tabsetPanel(
-                              
-                              tabPanel("Carte",
-                                       leafletOutput("carte_region")
-                              ),
-                              tabPanel("Graphique",
-                                       tags$hr(),
-                                       fluidRow(
-                                         box(title = "A adapter avec un textOutput",
-                                             width = 12,
-                                             #plotOutput("comb_plot_dep")
-                                             highchartOutput("comb_plot_dep"))),
-                                       fluidRow(
-                                         box(title = "A adapter avec un textOutput",
-                                             width = 6,
-                                             plotOutput("pyr_dep")),
-                                         box(title = "A adapter avec un textOutput",
-                                             width = 6,
-                                             highchartOutput("comp_pro_dep"))
-                                       ),
-                                       fluidRow(
-                                         box(title = "A adapter avec un textOutput",
-                                             width = 12,
-                                             #plotOutput("comb_plot_dep")
-                                             highchartOutput("hono_patien")))
-                                       
-                              ),
-                              tabPanel("Data",
-                                       dataTableOutput(outputId = "datatable_dep")
-                              )
-                            )
+                            
                   )
                 )
               )

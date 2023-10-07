@@ -13,42 +13,119 @@ library(shiny)
 function(input, output, session) {
   #Utilisation de la fonction réactive pour conserver les paramètres
   
-  data_dep <- reactive({
-    input$go_dep
-    isolate({
-      newdta[(profession_sante %in% c(input$profession_dep) & 
-                annee >= input$periode_dep[1] & 
-                annee <= input$periode_dep[2] & 
-                libelle_departement == input$departement &
-                classe_age != "tout_age"), ]
-    })
-  })
-  
-  data_comp_dep <- reactive({
-    input$go_dep
-    isolate({
-      newdta[(libelle_sexe == "tout sexe" & 
-                profession_sante %in% c(input$profession_dep, input$profession_dep_comp) &
-                annee >= input$periode_dep[1] & 
-                annee <= input$periode_dep[2] &
-                libelle_departement == input$departement &
-                classe_age == "tout_age"), ]
-    })
-  })
-  
   observe({
     updateSelectInput(session,
-                      inputId = "profession_dep_comp",
-                      label = "Profession libérale d'intérêt:",
+                      inputId = "profession_comp",
+                      label = "Profession libérale à comparer:",
                       #a remplacer par levels(data_effectif[, profession_sante])
-                      choices = setdiff(levels(data_effectif$profession_sante), input$profession_dep),
+                      choices = setdiff(levels(data_effectif$profession_sante), input$profession),
                       #Pemert le choix de plusieurs professions <- a discuter
     )
   })
+  observeEvent(input$echelle,
+               {
+                 if(input$echelle == "5"){
+                   data_dep <- reactive({
+                     input$go
+                     isolate({
+                       newdta[(profession_sante %in% c(input$profession) & 
+                                 annee >= input$periode[1] & 
+                                 annee <= input$periode[2] & 
+                                 libelle_departement == input$departement &
+                                 classe_age != "tout_age"), ]
+                     })
+                   })
+                   
+                   data_comp_dep <- reactive({
+                     input$go
+                     isolate({
+                       newdta[(libelle_sexe == "tout sexe" & 
+                                 profession_sante %in% c(input$profession, input$profession_comp) &
+                                 annee >= input$periode[1] & 
+                                 annee <= input$periode[2] &
+                                 libelle_departement == input$departement &
+                                 classe_age == "tout_age"), ]
+                     })
+                   })
+                   
+                   output$comb_plot_dep <- renderHighchart({
+                     tot_dep <- data_dep()[, .(effectif_tot = sum(effectif)), by = .(annee)]
+                     input$go
+                     isolate({
+                       highchart() %>%
+                         hc_add_series(data_dep(), "column", hcaes(x = annee, y = effectif, group = classe_age)) %>% 
+                         hc_add_series(tot_dep, "line",hcaes(x = annee, y = effectif_tot), yAxis=1, name = paste("Effectif",input$profession)) %>%
+                         hc_yAxis_multiples(
+                           list(
+                             title = list(text = paste("Effectif de", input$profession, "par classe d'âge")), 
+                             opposite = F,
+                             showLastLabel = FALSE),
+                           list(
+                             title = list(text = paste("Effectif de ", input$profession,"en", input$departement)), 
+                             opposite = T,
+                             showLastLabel = FALSE)
+                         ) %>%
+                         hc_tooltip(shared = TRUE)
+                     })
+                   })
+                   
+                   output$pyr_dep <- renderPlot({
+                     pyr_dep_dta <- data_dep()[libelle_sexe %in% c("femmes", "hommes") & annee == max(annee),]
+                     pyr_dep_dta$classe_age <- droplevels(pyr_dep_dta$classe_age)
+                     pyr_dep_dta$libelle_sexe <- droplevels(pyr_dep_dta$libelle_sexe)
+                     pyr_dep_dta <- pyr_dep_dta[libelle_sexe =="femmes", effectif := -effectif]
+                     pyr_dep_dta <- nvx_classe_age(pyr_dep_dta)
+                     
+                     
+                     # range_pyr_dep <- seq(round(min(pyr_dep_dta$effectif),-(10^(floor(log10(min(pyr_dep_dta$effectif)))+1))), 
+                     #                      max(pyr_dep_dta$effectif),
+                     #                      by = 10^(floor(log10(max(abs(min(pyr_dep_dta$effectif)), max(pyr_dep_dta$effectif))))-1)
+                     #                      )
+                     
+                     pyr_dep <- ggplot(pyr_dep_dta, aes(x = class_age_num, y = effectif, fill = libelle_sexe)) + 
+                       geom_bar(data = pyr_dep_dta[libelle_sexe =="femmes",], stat = "identity") +
+                       geom_bar(data = pyr_dep_dta[libelle_sexe =="hommes",], stat = "identity") +
+                       scale_x_continuous(breaks = seq(1,nlevels(pyr_dep_dta$classe_age), by =1),
+                                          labels = levels(pyr_dep_dta$classe_age)) +
+                       coord_flip()
+                     # scale_y_continuous(breaks  = range_pyr_dep,
+                     #                    labels = abs(range_pyr_dep))
+                     pyr_dep
+                   })
+                   
+                   output$comp_pro_dep <- renderHighchart({
+                     hchart(data_comp_dep()[order(annee)] , "line", hcaes(x = annee, y = effectif, group = profession_sante))
+                   })
+                   
+                   output$hono_patien <- renderHighchart({
+                     highchart() %>%
+                       hc_add_series(data_comp_dep(), "line", hcaes(annee, hono_sans_depassement_moyens, group = profession_sante), yAxis=1) %>% 
+                       hc_add_series(data_comp_dep(), "line", hcaes(x = annee, y = nombre_patients_uniques , group = profession_sante)) %>%
+                       hc_yAxis_multiples(
+                         list(
+                           title = list(text = "Patientele"), 
+                           opposite = F),
+                         list(
+                           title = list(text = "Salaire moyen hors depassement"), 
+                           opposite = T)
+                       ) %>%
+                       hc_tooltip(shared = TRUE)
+                   })
+                   
+                   output$datatable_dep <- renderDataTable({
+                     data_dep()
+                   })
+                 }
+                 else if(input$echelle == "4"){
+                   output$comb_plot_dep <- NULL
+                   output$pyr_dep <- NULL
+                   output$comp_pro_dep <- NULL
+                   output$hono_patien <- NULL
+                   output$datatable_dep <- NULL
+                 }
+               })
   
-  output$datatable_dep <- renderDataTable({
-    data_dep()
-  })
+  
   
   # output$comb_plot_dep <- renderPlot({
   #   tot_dep <- data_dep()[, .(effectif_tot = sum(effectif)), by = .(annee)]
@@ -73,28 +150,6 @@ function(input, output, session) {
   #   combined_plot
   # })
   
-  
-  output$comb_plot_dep <- renderHighchart({
-    tot_dep <- data_dep()[, .(effectif_tot = sum(effectif)), by = .(annee)]
-    input$go_dep
-    isolate({
-    highchart() %>%
-      hc_add_series(data_dep(), "column", hcaes(x = annee, y = effectif, group = classe_age)) %>% 
-      hc_add_series(tot_dep, "line",hcaes(x = annee, y = effectif_tot), yAxis=1, name = paste("Effectif",input$profession_dep)) %>%
-      hc_yAxis_multiples(
-        list(
-          title = list(text = paste("Effectif de", input$profession_dep, "par classe d'âge")), 
-          opposite = F,
-          showLastLabel = FALSE),
-        list(
-          title = list(text = paste("Effectif de ", input$profession_dep,"en", input$departement)), 
-          opposite = T,
-          showLastLabel = FALSE)
-      ) %>%
-      hc_tooltip(shared = TRUE)
-    })
-  })
-  
   newdta_info <- reactive({
     input$go_info
     isolate({
@@ -108,8 +163,15 @@ function(input, output, session) {
     })
   })
   
+  output$nb_info <- renderText({
+    input$go_info
+    isolate({
+      paste("Nombre de ", input$profession_info, "ramené à la population")
+    })
+  })
+  
   output$texte_info <- renderText({
-    paste(1, input$profession_info, "pour", newdta_info(), "habitants")
+    paste(1, substr(input$profession_info, 1, nchar(input$profession_info) - 1), "pour", newdta_info(), "habitants")
   })
   
   newdta_comp_region <- reactive({
@@ -123,50 +185,7 @@ function(input, output, session) {
                 libelle_sexe == "tout sexe"), list(effectif = round(1/(effectif/Effectif)), by = libelle_departement)]
     })
   })
-  
-  output$pyr_dep <- renderPlot({
-    pyr_dep_dta <- data_dep()[libelle_sexe %in% c("femmes", "hommes") & annee == max(annee),]
-    pyr_dep_dta$classe_age <- droplevels(pyr_dep_dta$classe_age)
-    pyr_dep_dta$libelle_sexe <- droplevels(pyr_dep_dta$libelle_sexe)
-    pyr_dep_dta <- pyr_dep_dta[libelle_sexe =="femmes", effectif := -effectif]
-    pyr_dep_dta <- nvx_classe_age(pyr_dep_dta)
-    
-    
-    # range_pyr_dep <- seq(round(min(pyr_dep_dta$effectif),-(10^(floor(log10(min(pyr_dep_dta$effectif)))+1))), 
-    #                      max(pyr_dep_dta$effectif),
-    #                      by = 10^(floor(log10(max(abs(min(pyr_dep_dta$effectif)), max(pyr_dep_dta$effectif))))-1)
-    #                      )
-    
-    pyr_dep <- ggplot(pyr_dep_dta, aes(x = class_age_num, y = effectif, fill = libelle_sexe)) + 
-      geom_bar(data = pyr_dep_dta[libelle_sexe =="femmes",], stat = "identity") +
-      geom_bar(data = pyr_dep_dta[libelle_sexe =="hommes",], stat = "identity") +
-      scale_x_continuous(breaks = seq(1,nlevels(pyr_dep_dta$classe_age), by =1),
-                         labels = levels(pyr_dep_dta$classe_age)) +
-      coord_flip()
-    # scale_y_continuous(breaks  = range_pyr_dep,
-    #                    labels = abs(range_pyr_dep))
-    pyr_dep
-  })
-  
-  output$comp_pro_dep <- renderHighchart({
-    hchart(data_comp_dep()[order(annee)] , "line", hcaes(x = annee, y = effectif, group = profession_sante))
-  })
-  
-  output$hono_patien <- renderHighchart({
-    highchart() %>%
-      hc_add_series(data_comp_dep(), "line", hcaes(annee, hono_sans_depassement_moyens, group = profession_sante), yAxis=1) %>% 
-      hc_add_series(data_comp_dep(), "line", hcaes(x = annee, y = nombre_patients_uniques , group = profession_sante)) %>%
-      hc_yAxis_multiples(
-        list(
-          title = list(text = "Patientele"), 
-          opposite = F),
-        list(
-          title = list(text = "Salaire moyen hors depassement"), 
-          opposite = T)
-      ) %>%
-      hc_tooltip(shared = TRUE)
-  })
-  
+
   # output$comparaison_region <- renderText({
   #   texte <- ""
   #   for(i in 1:nrow(newdta_comp_region())){
@@ -180,13 +199,13 @@ function(input, output, session) {
     if (is.infinite(newdta_comp_region()[[1,1]])){
       texte <- paste(newdta_comp_region()[[1,2]], " : Données manquantes pour les",input$profession_info)
     } else{
-      texte <- paste("<b>",newdta_comp_region()[[1,2]], " :" ,1, input$profession_info, "pour", newdta_comp_region()[[1,1]] , "hab", "</b>")
+      texte <- paste("<b>",newdta_comp_region()[[1,2]], " :" ,1, substr(input$profession_info, 1, nchar(input$profession_info) - 1), "pour", newdta_comp_region()[[1,1]] , "hab", "</b>")
     }
     for(i in 2:nrow(newdta_comp_region())){
       if (is.infinite(newdta_comp_region()[[i,1]])){
         ntext <- (paste(newdta_comp_region()[[i,2]]," : Données manquantes pour les",input$profession_info))
       } else{
-        ntext <- paste("<b>",newdta_comp_region()[[i,2]], " :" ,1, input$profession_info, "pour", newdta_comp_region()[[i,1]] , "hab","</b>")
+        ntext <- paste("<b>",newdta_comp_region()[[i,2]], " :" ,1, substr(input$profession_info, 1, nchar(input$profession_info) - 1), "pour", newdta_comp_region()[[i,1]] , "hab","</b>")
       }
       texte <- paste(texte,ntext, sep = '<br/>')
     }
@@ -200,19 +219,12 @@ function(input, output, session) {
       input$region_info
     })
   })
-  
-  output$nb_info <- renderText({
-    input$go_info
-    isolate({
-      paste("Nombre de ", input$profession_info, "ramené à la population")
-    })
-  })
-  
+
   # 
   # data_carte_region <- reactive({
   #   
   #   isolate({
-  #     newdta[(profession_sante == input$profession_dep & 
+  #     newdta[(profession_sante == input$profession & 
   #               annee == max(annee) &
   #               classe_age == "tout_age"), list(effectif = round(1/(effectif/Effectif))), by= libelle_departement]
   #   })
@@ -226,11 +238,12 @@ function(input, output, session) {
   
   
   data_carte_region <- reactive({
-    input$go_dep
+    input$go
     isolate({
-      a <- newdta[(profession_sante == input$profession_dep &
+      a <- newdta[(profession_sante == input$profession &
                      annee == max(annee) &
-                     classe_age == "tout_age" & libelle_sexe=="tout sexe"), list(eff = round(1/(s_par_region/S_EFF_region))), by= libelle_departement]
+                     classe_age == "tout_age" & libelle_sexe=="tout sexe"), 
+                  list(eff = round(1/(s_par_region/S_EFF_region))), by= libelle_departement]
       indices_tri <- match(data_carte$NAME_2, a$libelle_departement)
       a <- a[indices_tri, ]
     })
@@ -245,5 +258,8 @@ function(input, output, session) {
     #addProviderTiles
   })
   
+  output$scale <- renderText({
+    input$echelle
+  })
 }
   
