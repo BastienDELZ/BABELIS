@@ -13,6 +13,7 @@ library(shiny)
 function(input, output, session) {
   #Utilisation de la fonction réactive pour conserver les paramètres
   
+  
   observe({
     updateSelectInput(session,
                       inputId = "profession_comp",
@@ -22,6 +23,27 @@ function(input, output, session) {
                       #Pemert le choix de plusieurs professions <- a discuter
     )
   })
+  
+  observeEvent(input$departement,
+               {
+                 updateSelectInput(session,
+                                   inputId = "profession",
+                                   #a remplacer par levels(data_effectif[, profession_sante])
+                                   choices = levels(droplevels(data_effectif[(libelle_departement == input$departement & libelle_sexe == "tout sexe" & classe_age == "tout_age" & effectif > 0 & annee == max(annee)),])$profession)
+                                   #Pemert le choix de plusieurs professions <- a discuter
+                 )
+               })
+  
+  observeEvent(input$region,
+               {
+                 updateSelectInput(session,
+                                   inputId = "profession",
+                                   #a remplacer par levels(data_effectif[, profession_sante])
+                                   choices = levels(droplevels(data_effectif[(libelle_region == input$region & libelle_sexe == "tout sexe" & classe_age == "tout_age" & effectif > 0 & annee == max(annee)),])$profession)
+                                   #Pemert le choix de plusieurs professions <- a discuter
+                 )
+               })
+  
   observeEvent(input$echelle,
                {
                  if(input$echelle == "5"){
@@ -48,7 +70,7 @@ function(input, output, session) {
                      })
                    })
                    
-                   output$comb_plot_dep <- renderHighchart({
+                   output$comb_plot <- renderHighchart({
                      tot_dep <- data_dep()[, .(effectif_tot = sum(effectif)), by = .(annee)]
                      input$go
                      isolate({
@@ -69,12 +91,12 @@ function(input, output, session) {
                      })
                    })
                    
-                   output$pyr_dep <- renderPlot({
-                     pyr_dep_dta <- data_dep()[libelle_sexe %in% c("femmes", "hommes") & annee == max(annee),]
-                     pyr_dep_dta$classe_age <- droplevels(pyr_dep_dta$classe_age)
-                     pyr_dep_dta$libelle_sexe <- droplevels(pyr_dep_dta$libelle_sexe)
-                     pyr_dep_dta <- pyr_dep_dta[libelle_sexe =="femmes", effectif := -effectif]
-                     pyr_dep_dta <- nvx_classe_age(pyr_dep_dta)
+                   output$pyr <- renderPlot({
+                     pyr_dta <- data_dep()[libelle_sexe %in% c("femmes", "hommes") & annee == max(annee),]
+                     pyr_dta$classe_age <- droplevels(pyr_dta$classe_age)
+                     pyr_dta$libelle_sexe <- droplevels(pyr_dta$libelle_sexe)
+                     pyr_dta <- pyr_dta[libelle_sexe =="femmes", effectif := -effectif]
+                     pyr_dta <- nvx_classe_age(pyr_dta)
                      
                      
                      # range_pyr_dep <- seq(round(min(pyr_dep_dta$effectif),-(10^(floor(log10(min(pyr_dep_dta$effectif)))+1))), 
@@ -82,18 +104,18 @@ function(input, output, session) {
                      #                      by = 10^(floor(log10(max(abs(min(pyr_dep_dta$effectif)), max(pyr_dep_dta$effectif))))-1)
                      #                      )
                      
-                     pyr_dep <- ggplot(pyr_dep_dta, aes(x = class_age_num, y = effectif, fill = libelle_sexe)) + 
-                       geom_bar(data = pyr_dep_dta[libelle_sexe =="femmes",], stat = "identity") +
-                       geom_bar(data = pyr_dep_dta[libelle_sexe =="hommes",], stat = "identity") +
-                       scale_x_continuous(breaks = seq(1,nlevels(pyr_dep_dta$classe_age), by =1),
-                                          labels = levels(pyr_dep_dta$classe_age)) +
+                     pyr <- ggplot(pyr_dta, aes(x = class_age_num, y = effectif, fill = libelle_sexe)) + 
+                       geom_bar(data = pyr_dta[libelle_sexe =="femmes",], stat = "identity") +
+                       geom_bar(data = pyr_dta[libelle_sexe =="hommes",], stat = "identity") +
+                       scale_x_continuous(breaks = seq(1,nlevels(pyr_dta$classe_age), by =1),
+                                          labels = levels(pyr_dta$classe_age)) +
                        coord_flip()
                      # scale_y_continuous(breaks  = range_pyr_dep,
                      #                    labels = abs(range_pyr_dep))
-                     pyr_dep
+                     pyr
                    })
                    
-                   output$comp_pro_dep <- renderHighchart({
+                   output$comp_pro <- renderHighchart({
                      hchart(data_comp_dep()[order(annee)] , "line", hcaes(x = annee, y = effectif, group = profession_sante))
                    })
                    
@@ -112,7 +134,7 @@ function(input, output, session) {
                        hc_tooltip(shared = TRUE)
                    })
                    
-                   output$datatable_dep <- renderDataTable({
+                   output$datatable <- renderDataTable({
                      data_dep()
                    })
                  }
@@ -149,6 +171,16 @@ function(input, output, session) {
   #   combined_plot <- plot2 / plot1 #plot 2 au dessus du plot 1
   #   combined_plot
   # })
+  
+  observeEvent(input$region_info,
+               {
+                 updateSelectInput(session,
+                                   inputId = "departement_info",
+                                   #a remplacer par levels(data_effectif[, profession_sante])
+                                   choices = levels(droplevels(data_effectif[libelle_region == input$region_info,])$libelle_departement)
+                                   #Pemert le choix de plusieurs professions <- a discuter
+                 )
+               })
   
   newdta_info <- reactive({
     input$go_info

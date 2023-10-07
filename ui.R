@@ -84,23 +84,6 @@ ui <- dashboardPage(
                                  #Utiliser pour ne pas avoir de virgule en séparateur de millier
                                  sep =""
                                ),
-                               selectInput(
-                                 inputId = "profession",
-                                 label = "Profession libérale d'intérêt:",
-                                 #a remplacer par levels(data_effectif[, profession_sante])
-                                 choices = levels(data_effectif[, profession_sante]),
-                                 #Pemert le choix de plusieurs professions <- a discuter
-                                 multiple = F,
-                                 selected = "Chirurgiens"
-                               ),
-                               selectInput(
-                                 inputId = "profession_comp",
-                                 label = "Profession libérale à comparer:",
-                                 #a remplacer par levels(data_effectif[, profession_sante])
-                                 choices = levels(data_effectif[, profession_sante]),
-                                 #Pemert le choix de plusieurs professions <- a discuter
-                                 multiple = T
-                               ),
                                conditionalPanel(
                                  condition = "input.echelle == '4'",
                                  selectInput(
@@ -123,6 +106,23 @@ ui <- dashboardPage(
                                    multiple = F,
                                    selected = "Hérault"
                                  )
+                               ),
+                               selectInput(
+                                 inputId = "profession",
+                                 label = "Profession libérale d'intérêt:",
+                                 #a remplacer par levels(data_effectif[, profession_sante])
+                                 choices = levels(data_effectif[, profession_sante]),
+                                 #Pemert le choix de plusieurs professions <- a discuter
+                                 multiple = F,
+                                 selected = "Chirurgiens"
+                               ),
+                               selectInput(
+                                 inputId = "profession_comp",
+                                 label = "Profession libérale à comparer:",
+                                 #a remplacer par levels(data_effectif[, profession_sante])
+                                 choices = levels(data_effectif[, profession_sante]),
+                                 #Pemert le choix de plusieurs professions <- a discuter
+                                 multiple = T
                                ),
                                checkboxGroupInput(
                                  inputId = "sexe", 
@@ -151,25 +151,25 @@ ui <- dashboardPage(
                                                         fluidRow(
                                                           box(title = "A adapter avec un textOutput",
                                                               width = 12,
-                                                              #plotOutput("comb_plot_dep")
-                                                              highchartOutput("comb_plot_dep"))),
+                                                              #plotOutput("comb_plot")
+                                                              highchartOutput("comb_plot"))),
                                                         fluidRow(
                                                           box(title = "A adapter avec un textOutput",
                                                               width = 6,
-                                                              plotOutput("pyr_dep")),
+                                                              plotOutput("pyr")),
                                                           box(title = "A adapter avec un textOutput",
                                                               width = 6,
-                                                              highchartOutput("comp_pro_dep"))
+                                                              highchartOutput("comp_pro"))
                                                         ),
                                                         fluidRow(
                                                           box(title = "A adapter avec un textOutput",
                                                               width = 12,
-                                                              #plotOutput("comb_plot_dep")
+                                                              #plotOutput("comb_plot")
                                                               highchartOutput("hono_patien")))
                                                         
                                                ),
                                                tabPanel("Data",
-                                                        dataTableOutput(outputId = "datatable_dep")
+                                                        dataTableOutput(outputId = "datatable")
                                                )
                                              )
                                              ),
