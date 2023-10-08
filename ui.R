@@ -15,53 +15,15 @@ ui <- dashboardPage(
   dashboardSidebar(
     sidebarMenu(
       id = "tabs",
-      menuItem("Données nationales", tabName = "national"),
-      menuItem("Données régionales", tabName = "regional"),
-      menuItem("Données départementales", tabName = "departemental"),
+      menuItem("Exploration", tabName = "exploration"),
       menuItem("Info",tabName = "info")
     )
   ),
   
   dashboardBody(
     tabItems(
-      # Onglet "Données nationales"
-      tabItem(tabName = "national",
-              fluidPage(
-                headerPanel("Données nationales"),
-                sidebarLayout(
-                  sidebarPanel(
-                    sliderInput("annee", label = "Sélectionnez une année",
-                                min = 2010, max = 2021, value = c(2010, 2021)),
-                    selectInput("profession_national", label = "Profession :",
-                                choices = c("Dentiste", "Rhumatologue"), multiple = FALSE)
-                  ),
-                  mainPanel(
-                    # Ajoutez ici le contenu spécifique à cet onglet
-                  )
-                )
-              )
-      ),
-      
-      # Onglet "Données régionales"
-      tabItem(tabName = "regional",
-              fluidPage(
-                headerPanel("Données régionales"),
-                sidebarLayout(
-                  sidebarPanel(
-                    selectInput("region_regional", label = "Sélectionnez une région :",
-                                choices = c("Bretagne", "Grand Est"), multiple = FALSE),
-                    selectInput("profession_regional", label = "Profession :",
-                                choices = c("Dentiste", "Rhumatologue"), multiple = FALSE)
-                  ),
-                  mainPanel(
-                    # Ajoutez ici le contenu principal pour "Données régionales"
-                  )
-                )
-              )
-      ),
-      
-      # Onglet "Données départementales"
-      tabItem(tabName = "departemental",
+      # Onglet "Exploration des données"
+      tabItem(tabName = "exploration",
               fluidPage(
                 headerPanel("Données départementales"),
                 sidebarLayout(

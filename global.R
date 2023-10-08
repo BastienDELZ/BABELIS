@@ -121,6 +121,7 @@ newdata2 <- merge(newdata, dta_hono, by = c("annee","profession_sante","Num_dep"
 newdta <- merge(newdata2, dta_pat, by = c("annee","profession_sante","Num_dep" ),  all.x = TRUE)
 newdta <-newdta[, ':=' (s_par_region =sum(effectif), S_EFF_region = sum(Effectif)), by = list(libelle_region, profession_sante, classe_age, annee, libelle_sexe)]
 
+
 # texte <- ""
 # for(i in 1:nrow(test)){
 #   texte <- paste(texte, test[[i,1]], newdata_comp_region[[i,2]], "\n")
@@ -186,8 +187,5 @@ newdta <-newdta[, ':=' (s_par_region =sum(effectif), S_EFF_region = sum(Effectif
 #       tooltip = list(valueSuffix = "°C")
 #     )
 #   )
-
-
-
 
 
