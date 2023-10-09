@@ -175,7 +175,12 @@ function(input, output, session) {
                                  annee >= input$periode[1] & 
                                  annee <= input$periode[2] &
                                  libelle_region == input$region &
-                                 classe_age == "tout_age"), ]
+                                 classe_age == "tout_age"),
+                              .(effectif = sum(effectif),
+                                Effectif = sum(Effectif),
+                                hono_sans_depassement_moyens = sum(hono_sans_depassement_moyens)/nrow(newdta[libelle_region == input$region,.(libelle_departement), by = libelle_departement][,1]),
+                                nombre_patients_uniques = sum(nombre_patients_uniques)/nrow(newdta[libelle_region == input$region,.(libelle_departement), by = libelle_departement][,1])),
+                              by =.(annee, profession_sante, libelle_region)]
                      })
                    })
                    
@@ -225,7 +230,24 @@ function(input, output, session) {
                    })
                    
                    output$comp_pro <- renderHighchart({
-                     hchart(data_comp_reg()[order(annee)] , "line", hcaes(x = annee, y = effectif, group = profession_sante))
+                     highchart() %>%
+                       hc_add_series(data_comp_reg()[order(annee)],
+                                     "line",
+                                     hcaes(x = annee, y = effectif, group = profession_sante),
+                                     marker = list(symbol = "square")) %>%
+                       hc_add_series(data_comp_reg()[,.(ratio = round(1/(effectif/Effectif))), by =.(annee, profession_sante)][order(annee)],
+                                     "line",
+                                     hcaes(x = annee, y = ratio, group = profession_sante),
+                                     yAxis =1,
+                                     marker = list(symbol = "circle")) %>%
+                       hc_yAxis_multiples(
+                         list(
+                           title = list(text = paste("Effectif de praticien en", input$departement)), 
+                           opposite = F),
+                         list(
+                           title = list(text = "Nombre d'habitant pour 1 praticien"), 
+                           opposite = T)
+                       )
                    })
                    
                    output$hono_patien <- renderHighchart({
@@ -244,7 +266,7 @@ function(input, output, session) {
                    })
                    
                    output$datatable <- renderDataTable({
-                     data_dep()
+                     data_comp_reg()
                    })
                  }
                })
@@ -385,7 +407,7 @@ function(input, output, session) {
   output$carte_region <- renderLeaflet({
     #qpal <- colorNumeric(palette = "YlGnBu", domain = data_carte_region()$eff[!is.infinite(data_carte_region()$eff)])
     #qpal <- colorBin(palette = "YlGnBu", domain = data_carte_region()$eff[!is.infinite(data_carte_region()$eff)], bins = 5)
-    qpal <- colorQuantile(palette = "YlGnBu",n=5,domain = data_carte_region()$eff[!is.infinite(data_carte_region()$eff)])
+    qpal <- colorBin(palette = "YlGnBu",bins =5,domain = data_carte_region()$eff[!is.infinite(data_carte_region()$eff)])
     leaflet(data_carte) %>% addTiles() %>% addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity=0.5,fillColor = ~qpal(data_carte_region()$eff)) %>% 
       addLegend(pal = qpal, values = ~data_carte_region()$eff, opacity = 1)
     #addProviderTiles
