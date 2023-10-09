@@ -12,7 +12,18 @@ library(shiny)
 # Define server logic required to draw a histogram
 function(input, output, session) {
   #Utilisation de la fonction réactive pour conserver les paramètres
+  observeEvent(input$disparitus, {
+      shinyjs::toggle(id = "side")
+    })
   
+  
+  output$header_name <- renderText({
+    input$go
+    isolate({
+      ifelse(input$echelle == '5', "Données Départementales", "Données Régionales")
+
+    })
+  })
   
   observe({
     updateSelectInput(session,
@@ -128,7 +139,7 @@ function(input, output, session) {
                                      marker = list(symbol = "circle")) %>%
                        hc_yAxis_multiples(
                          list(
-                           title = list(text = paste("Effectif de praticien en", input$departement)), 
+                           title = list(text = paste("Effectif de praticien en", data_comp_dep()$libelle_departement[1])), 
                            opposite = F),
                          list(
                            title = list(text = "Nombre d'habitant pour 1 praticien"), 
@@ -152,8 +163,29 @@ function(input, output, session) {
                    })
                    
                    output$datatable <- renderDataTable({
-                     data_dep()
+                     input$go
+                     isolate({
+                       dtatable <- data_dep()[, .(annee, profession_sante, libelle_departement, classe_age, libelle_sexe, effectif, hono_sans_depassement_moyens, nombre_patients_uniques)]
+                       colnames(dtatable) <- c("Année", "Profession", "Département", "Classe d'âge", "Sexe", "Effectif", "Honoraire moyen", "Nombre de patient")
+                       dtatable
+                     })
+                     })
+                   
+                   data_carte_region <- reactive({
+                     input$go
+                     isolate({
+                       newdta[(profession_sante == input$profession &
+                                 annee == max(annee) &
+                                 classe_age == "tout_age"), list(effectif = round(1/(effectif/Effectif))), by= libelle_departement]
+                     })
                    })
+                   
+                   output$carte_region <- renderLeaflet({
+                     qpal <- colorBin(palette = "YlGnBu",bins=5,domain = data_carte_region()$effectif[!is.infinite(data_carte_region()$effectif)])
+                     leaflet(data_carte) %>% addTiles() %>% addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity=0.5,fillColor = ~qpal(data_carte_region()$effectif))
+                     #addProviderTiles
+                   })
+                   
                  }
                  else if(input$echelle == "4"){
                    data_reg <- reactive({
@@ -266,7 +298,35 @@ function(input, output, session) {
                    })
                    
                    output$datatable <- renderDataTable({
-                     data_comp_reg()
+                     input$go
+                     isolate({
+                       dtatable <- data_reg()[, .(effectif = sum(effectif),
+                                      hono_sans_depassement_moyens = sum(hono_sans_depassement_moyens)/nrow(newdta[libelle_region == input$region,.(libelle_departement), by = libelle_departement][,1]),
+                                      nombre_patients_uniques = sum(nombre_patients_uniques)/nrow(newdta[libelle_region == input$region,.(libelle_departement), by = libelle_departement][,1])),
+                                  by =.(annee, profession_sante, libelle_region, classe_age, libelle_sexe)]
+                       colnames(dtatable) <- c("Année", "Profession", "Région", "Classe d'âge", "Sexe", "Effectif", "Honoraire moyen", "Nombre de patient")
+                       dtatable
+                     })
+
+                   })
+                   
+                   data_carte_region <- reactive({
+                     input$go
+                     isolate({
+                       a <- newdta[(profession_sante == input$profession &
+                                      annee == max(annee) &
+                                      classe_age == "tout_age" & libelle_sexe=="tout sexe"), 
+                                   list(eff = round(1/(s_par_region/S_EFF_region))), by= libelle_departement]
+                       indices_tri <- match(data_carte$NAME_2, a$libelle_departement)
+                       a <- a[indices_tri, ]
+                     })
+                   })
+                   
+                   output$carte_region <- renderLeaflet({
+                     qpal <- colorBin(palette = "YlGnBu",bins =5,domain = data_carte_region()$eff[!is.infinite(data_carte_region()$eff)])
+                     leaflet(data_carte) %>% addTiles() %>% addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity=0.5,fillColor = ~qpal(data_carte_region()$eff)) %>% 
+                       addLegend(pal = qpal, values = ~data_carte_region()$eff, opacity = 1)
+                     #addProviderTiles
                    })
                  }
                })
@@ -295,6 +355,18 @@ function(input, output, session) {
   #   combined_plot
   # })
   
+  
+  
+  # observeEvent(input$region_info,
+  #              {
+  #                updateSelectInput(session,
+  #                                  inputId = "profession_info",
+  #                                  #a remplacer par levels(data_effectif[, profession_sante])
+  #                                  choices = levels(droplevels(data_effectif[(libelle_region == input$region & libelle_sexe == "tout sexe" & classe_age == "tout_age" & effectif > 0 & annee == max(annee)),])$profession)
+  #                                  #Pemert le choix de plusieurs professions <- a discuter
+  #                )
+  #              })
+  
   observeEvent(input$region_info,
                {
                  updateSelectInput(session,
@@ -309,12 +381,11 @@ function(input, output, session) {
     input$go_info
     isolate({
       newdta[(profession_sante == input$profession_info & 
-                
                 annee == max(annee) &
                 libelle_region == input$region_info &
                 libelle_departement == input$departement_info &
                 classe_age == "tout_age" & 
-                libelle_sexe == "tout sexe"), list(effectif = round(1/(effectif/Effectif)))]
+                libelle_sexe == "tout sexe"), .(ratio = round(1/(effectif/Effectif)), hono_sans_depassement_moyens, nombre_patients_uniques)]
     })
   })
   
@@ -326,7 +397,7 @@ function(input, output, session) {
   })
   
   output$texte_info <- renderText({
-    paste(1, substr(input$profession_info, 1, nchar(input$profession_info) - 1), "pour", newdta_info(), "habitants")
+    paste(1, substr(input$profession_info, 1, nchar(input$profession_info) - 1), "pour", newdta_info()[,.(ratio)], "habitants")
   })
   
   newdta_comp_region <- reactive({
@@ -337,7 +408,8 @@ function(input, output, session) {
                 libelle_region == input$region_info &
                 libelle_departement != input$departement_info &
                 classe_age == "tout_age" & 
-                libelle_sexe == "tout sexe"), list(effectif = round(1/(effectif/Effectif)), by = libelle_departement)]
+                libelle_sexe == "tout sexe"), 
+             .(ratio = round(1/(effectif/Effectif)), hono_sans_depassement_moyens, nombre_patients_uniques), by = libelle_departement]
     })
   })
 
@@ -351,16 +423,16 @@ function(input, output, session) {
   # })
   
   output$comparaison_region <- renderText({
-    if (is.infinite(newdta_comp_region()[[1,1]])){
-      texte <- paste(newdta_comp_region()[[1,2]], " : Données manquantes pour les",input$profession_info)
+    if (is.infinite(newdta_comp_region()[[1,2]])){
+      texte <- paste("-",newdta_comp_region()[[1,1]], " : Données manquantes pour les",input$profession_info)
     } else{
-      texte <- paste("<b>",newdta_comp_region()[[1,2]], " :" ,1, substr(input$profession_info, 1, nchar(input$profession_info) - 1), "pour", newdta_comp_region()[[1,1]] , "hab", "</b>")
+      texte <- paste("<b>","-",newdta_comp_region()[[1,1]], " :" ,1, substr(input$profession_info, 1, nchar(input$profession_info) - 1), "pour", newdta_comp_region()[[1,2]] , "hab", "</b>")
     }
     for(i in 2:nrow(newdta_comp_region())){
-      if (is.infinite(newdta_comp_region()[[i,1]])){
-        ntext <- (paste(newdta_comp_region()[[i,2]]," : Données manquantes pour les",input$profession_info))
+      if (is.infinite(newdta_comp_region()[[i,2]])){
+        ntext <- (paste("-",newdta_comp_region()[[i,1]]," : Données manquantes pour les",input$profession_info))
       } else{
-        ntext <- paste("<b>",newdta_comp_region()[[i,2]], " :" ,1, substr(input$profession_info, 1, nchar(input$profession_info) - 1), "pour", newdta_comp_region()[[i,1]] , "hab","</b>")
+        ntext <- paste("<b>","-",newdta_comp_region()[[i,1]], " :" ,1, substr(input$profession_info, 1, nchar(input$profession_info) - 1), "pour", newdta_comp_region()[[i,2]] , "hab","</b>")
       }
       texte <- paste(texte,ntext, sep = '<br/>')
     }
@@ -374,47 +446,31 @@ function(input, output, session) {
       input$region_info
     })
   })
-
-  # 
-  # data_carte_region <- reactive({
-  #   
-  #   isolate({
-  #     newdta[(profession_sante == input$profession & 
-  #               annee == max(annee) &
-  #               classe_age == "tout_age"), list(effectif = round(1/(effectif/Effectif))), by= libelle_departement]
-  #   })
-  # })
-  # 
-  # output$carte_region <- renderLeaflet({
-  #   qpal <- colorQuantile(palette = "YlGnBu",n=5,domain = data_carte_region()$effectif[!is.infinite(data_carte_region()$effectif)])
-  #   leaflet(data_carte) %>% addTiles() %>% addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity=0.5,fillColor = ~qpal(data_carte_region()$effectif)) 
-  #   #addProviderTiles
-  # })
   
-  
-  data_carte_region <- reactive({
-    input$go
+  output$hono_info <- renderText({
+    input$go_info
     isolate({
-      a <- newdta[(profession_sante == input$profession &
-                     annee == max(annee) &
-                     classe_age == "tout_age" & libelle_sexe=="tout sexe"), 
-                  list(eff = round(1/(s_par_region/S_EFF_region))), by= libelle_departement]
-      indices_tri <- match(data_carte$NAME_2, a$libelle_departement)
-      a <- a[indices_tri, ]
+      paste(newdta_info()[, hono_sans_depassement_moyens], "€ par praticien")
     })
   })
   
-  output$carte_region <- renderLeaflet({
-    #qpal <- colorNumeric(palette = "YlGnBu", domain = data_carte_region()$eff[!is.infinite(data_carte_region()$eff)])
-    #qpal <- colorBin(palette = "YlGnBu", domain = data_carte_region()$eff[!is.infinite(data_carte_region()$eff)], bins = 5)
-    qpal <- colorBin(palette = "YlGnBu",bins =5,domain = data_carte_region()$eff[!is.infinite(data_carte_region()$eff)])
-    leaflet(data_carte) %>% addTiles() %>% addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity=0.5,fillColor = ~qpal(data_carte_region()$eff)) %>% 
-      addLegend(pal = qpal, values = ~data_carte_region()$eff, opacity = 1)
-    #addProviderTiles
+  output$comparaison_hono <- renderText({
+    if (is.infinite(newdta_comp_region()[[1,3]])){
+      texte <- paste("-",newdta_comp_region()[[1,1]], " : Données manquantes pour les",input$profession_info)
+    } else{
+      texte <- paste("<b>","-",newdta_comp_region()[[1,1]], " :" ,newdta_comp_region()[[1,3]], "€ de salaire en moyenne par praticien", "</b>")
+    }
+    for(i in 2:nrow(newdta_comp_region())){
+      if (is.infinite(newdta_comp_region()[[i,3]])){
+        ntext <- (paste("-",newdta_comp_region()[[i,1]]," : Données manquantes pour les",input$profession_info))
+      } else{
+        ntext <- paste("<b>","-",newdta_comp_region()[[i,1]], " :" ,newdta_comp_region()[[1,3]], "€ de salaire en moyenne par praticien","</b>")
+      }
+      texte <- paste(texte,ntext, sep = '<br/>')
+    }
+    HTML(texte)
+    
   })
   
-  output$scale <- renderText({
-    input$echelle
-  })
 }
   

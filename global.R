@@ -15,6 +15,7 @@ library(MASS)
 library(shinydashboard)
 library(tidyr)
 library(highcharter)
+library(shinycssloaders)
 
 
 # chargement des fonctions
