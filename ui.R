@@ -182,7 +182,7 @@ ui <- dashboardPage(
                                        #box(title = "Percent of Total Customers", width = NULL, status = "success", infoBoxOutput("percentTotalStayed"))
                                    ))
                           ),
-                          "Comparaison du nombre d'habitant pour 1 praticien avec les autres départements de la région",
+                          "Comparaison du nombre d'habitant pour 1 praticien avec les autres départements de la région :",
                           tags$br(),
                           tags$br(),
                           htmlOutput(outputId = "comparaison_region"),

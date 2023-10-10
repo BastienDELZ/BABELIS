@@ -150,7 +150,7 @@ function(input, output, session) {
                    output$hono_patien <- renderHighchart({
                      highchart() %>%
                        hc_add_series(data_comp_dep(), "line", hcaes(annee, hono_sans_depassement_moyens, group = profession_sante), yAxis=1,marker = list(symbol = "circle"), tooltip = list(pointFormat = "<b>Honoraire annuel moyen :</b> {point.y} € <br/>")) %>% 
-                       hc_add_series(data_comp_dep(), "line", hcaes(x = annee, y = nombre_patients_uniques , group = profession_sante), marker = list(symbol = "square"), tooltip = list(pointFormat = "<b>Nombre de patient :</b> {point.y}")) %>%
+                       hc_add_series(data_comp_dep(), "line", hcaes(x = annee, y = nombre_patients_uniques , group = profession_sante), marker = list(symbol = "square"), tooltip = list(pointFormat = "<b>Nombre de patient :</b> {point.y}<br/>")) %>%
                        hc_yAxis_multiples(
                          list(
                            title = list(text = "Patientele"), 
@@ -182,7 +182,8 @@ function(input, output, session) {
                    
                    output$carte_region <- renderLeaflet({
                      qpal <- colorBin(palette = "YlGnBu",bins=5,domain = data_carte_region()$effectif[!is.infinite(data_carte_region()$effectif)])
-                     leaflet(data_carte) %>% addTiles() %>% addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity=0.5,fillColor = ~qpal(data_carte_region()$effectif))
+                     leaflet(data_carte) %>% addTiles() %>% addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity=0.5,fillColor = ~qpal(data_carte_region()$effectif)) %>%
+                       addLegend(title = "Nombre d'habitant par praticien", pal = qpal, values = ~data_carte_region()$eff, opacity = 1)
                      #addProviderTiles
                    })
                    
@@ -273,7 +274,7 @@ function(input, output, session) {
                                      hcaes(x = annee, y = ratio, group = profession_sante),
                                      yAxis =1,
                                      marker = list(symbol = "circle"),
-                                     tooltip = list(pointFormat = "<b>Nombre d'habitant par praticien :</b> {point.y}")) %>%
+                                     tooltip = list(pointFormat = "<b>Nombre d'habitant par praticien :</b> {point.y}<br/>")) %>%
                        hc_yAxis_multiples(
                          list(
                            title = list(text = paste("Effectif de praticien en", input$departement)), 
@@ -327,7 +328,7 @@ function(input, output, session) {
                    output$carte_region <- renderLeaflet({
                      qpal <- colorBin(palette = "YlGnBu",bins =5,domain = data_carte_region()$eff[!is.infinite(data_carte_region()$eff)])
                      leaflet(data_carte) %>% addTiles() %>% addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity=0.5,fillColor = ~qpal(data_carte_region()$eff)) %>% 
-                       addLegend(pal = qpal, values = ~data_carte_region()$eff, opacity = 1)
+                       addLegend(title ="Nombre d'habitant par praticien", pal = qpal, values = ~data_carte_region()$eff, opacity = 1)
                      #addProviderTiles
                    })
                  }
@@ -425,13 +426,13 @@ function(input, output, session) {
   # })
   
   output$comparaison_region <- renderText({
-    if (is.infinite(newdta_comp_region()[[1,2]])){
+    if (is.infinite(newdta_comp_region()[[1,2]]) | newdta_comp_region()[[1,2]] == 0 | is.na(newdta_comp_region()[[1,2]])){
       texte <- paste("-",newdta_comp_region()[[1,1]], " : Données manquantes pour les",input$profession_info)
     } else{
       texte <- paste("<b>","-",newdta_comp_region()[[1,1]], " :" ,1, substr(input$profession_info, 1, nchar(input$profession_info) - 1), "pour", newdta_comp_region()[[1,2]] , "hab", "</b>")
     }
     for(i in 2:nrow(newdta_comp_region())){
-      if (is.infinite(newdta_comp_region()[[i,2]])){
+      if (is.infinite(newdta_comp_region()[[i,2]]) | newdta_comp_region()[[i,2]] == 0 | is.na(newdta_comp_region()[[i,2]])){
         ntext <- (paste("-",newdta_comp_region()[[i,1]]," : Données manquantes pour les",input$profession_info))
       } else{
         ntext <- paste("<b>","-",newdta_comp_region()[[i,1]], " :" ,1, substr(input$profession_info, 1, nchar(input$profession_info) - 1), "pour", newdta_comp_region()[[i,2]] , "hab","</b>")
@@ -457,16 +458,16 @@ function(input, output, session) {
   })
   
   output$comparaison_hono <- renderText({
-    if (is.infinite(newdta_comp_region()[[1,3]])){
+    if (is.infinite(newdta_comp_region()[[1,3]]) | newdta_comp_region()[[1,3]] == 0 | is.na(newdta_comp_region()[[1,3]])){
       texte <- paste("-",newdta_comp_region()[[1,1]], " : Données manquantes pour les",input$profession_info)
     } else{
-      texte <- paste("<b>","-",newdta_comp_region()[[1,1]], " :" ,newdta_comp_region()[[1,3]], "€ de salaire en moyenne par praticien", "</b>")
+      texte <- paste("<b>","-",newdta_comp_region()[[1,1]], " :" ,newdta_comp_region()[[1,3]], "€ d'honoraire en moyenne par praticien", "</b>")
     }
     for(i in 2:nrow(newdta_comp_region())){
-      if (is.infinite(newdta_comp_region()[[i,3]])){
+      if (is.infinite(newdta_comp_region()[[i,3]]) | newdta_comp_region()[[i,3]] == 0 | is.na(newdta_comp_region()[[i,3]])){
         ntext <- (paste("-",newdta_comp_region()[[i,1]]," : Données manquantes pour les",input$profession_info))
       } else{
-        ntext <- paste("<b>","-",newdta_comp_region()[[i,1]], " :" ,newdta_comp_region()[[1,3]], "€ de salaire en moyenne par praticien","</b>")
+        ntext <- paste("<b>","-",newdta_comp_region()[[i,1]], " :" ,newdta_comp_region()[[i,3]], "€ d'honoraire en moyenne par praticien","</b>")
       }
       texte <- paste(texte,ntext, sep = '<br/>')
     }
