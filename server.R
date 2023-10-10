@@ -16,7 +16,6 @@ function(input, output, session) {
     input$go
     isolate({
       ifelse(input$echelle == '5', "Données Départementales", "Données Régionales")
-
     })
   })
   
@@ -25,7 +24,8 @@ function(input, output, session) {
                       inputId = "profession_comp",
                       label = "Profession libérale à comparer:",
                       #a remplacer par levels(data_effectif[, profession_sante])
-                      choices = setdiff(levels(data_effectif$profession_sante), input$profession),
+                      choices = setdiff(levels(data_effectif$profession_sante), 
+                                        input$profession),
                       #Pemert le choix de plusieurs professions <- a discuter
     )
   })
@@ -44,9 +44,8 @@ function(input, output, session) {
                {
                  updateSelectInput(session,
                                    inputId = "profession",
-                                   #a remplacer par levels(data_effectif[, profession_sante])
                                    choices = levels(droplevels(data_effectif[(libelle_region == input$region & libelle_sexe == "tout sexe" & classe_age == "tout_age" & effectif > 0 & annee == max(annee)),])$profession)
-                                   #Pemert le choix de plusieurs professions <- a discuter
+
                  )
                })
   
@@ -81,8 +80,14 @@ function(input, output, session) {
                      input$go
                      isolate({
                        highchart() %>%
-                         hc_add_series(data_dep()[libelle_sexe == "tout sexe",], "column", hcaes(x = annee, y = effectif, group = classe_age)) %>% 
-                         hc_add_series(tot_dep, "line",hcaes(x = annee, y = effectif_tot), yAxis=1, name = paste("Effectif",input$profession)) %>%
+                         hc_add_series(data_dep()[libelle_sexe == "tout sexe",],
+                                       "column",
+                                       hcaes(x = annee, y = effectif, group = classe_age)) %>% 
+                         hc_add_series(tot_dep,
+                                       "line",
+                                       hcaes(x = annee, y = effectif_tot), 
+                                       yAxis=1, 
+                                       name = paste("Effectif",input$profession)) %>%
                          hc_yAxis_multiples(
                            list(
                              title = list(text = paste("Effectif de", input$profession, "par classe d'âge")), 
@@ -104,12 +109,6 @@ function(input, output, session) {
                      pyr_dta <- pyr_dta[libelle_sexe =="femmes", effectif := -effectif]
                      pyr_dta <- nvx_classe_age(pyr_dta)
                      
-                     
-                     # range_pyr_dep <- seq(round(min(pyr_dep_dta$effectif),-(10^(floor(log10(min(pyr_dep_dta$effectif)))+1))), 
-                     #                      max(pyr_dep_dta$effectif),
-                     #                      by = 10^(floor(log10(max(abs(min(pyr_dep_dta$effectif)), max(pyr_dep_dta$effectif))))-1)
-                     #                      )
-                     
                      pyr <- ggplot(pyr_dta, aes(x = class_age_num, y = effectif, fill = libelle_sexe)) + 
                        geom_bar(data = pyr_dta[libelle_sexe =="femmes",], stat = "identity") +
                        geom_bar(data = pyr_dta[libelle_sexe =="hommes",], stat = "identity") +
@@ -118,8 +117,7 @@ function(input, output, session) {
                        xlab("Classe d'âge")+
                        ylab("Effectif")+
                        coord_flip()
-                     # scale_y_continuous(breaks  = range_pyr_dep,
-                     #                    labels = abs(range_pyr_dep))
+                     
                      pyr
                    })
                    
@@ -127,12 +125,16 @@ function(input, output, session) {
                      highchart() %>%
                        hc_add_series(data_comp_dep()[order(annee)],
                                      "line",
-                                     hcaes(x = annee, y = effectif, group = profession_sante),
+                                     hcaes(x = annee, 
+                                           y = effectif, 
+                                           group = profession_sante),
                                      marker = list(symbol = "square"),
                                      tooltip = list(pointFormat = "<b>Effectif praticien :</b> {point.y}<br/>")) %>%
                        hc_add_series(data_comp_dep()[,.(ratio = round(1/(effectif/Effectif))), by =.(annee, profession_sante)][order(annee)],
                                      "line",
-                                     hcaes(x = annee, y = ratio, group = profession_sante),
+                                     hcaes(x = annee, 
+                                           y = ratio, 
+                                           group = profession_sante),
                                      yAxis =1,
                                      marker = list(symbol = "circle"),
                                      tooltip = list(pointFormat = "<b>Nombre d'habitant par praticien :</b> {point.y}<br/>")) %>%
@@ -148,8 +150,20 @@ function(input, output, session) {
                    
                    output$hono_patien <- renderHighchart({
                      highchart() %>%
-                       hc_add_series(data_comp_dep(), "line", hcaes(annee, hono_sans_depassement_moyens, group = profession_sante), yAxis=1,marker = list(symbol = "circle"), tooltip = list(pointFormat = "<b>Honoraire annuel moyen :</b> {point.y} € <br/>")) %>% 
-                       hc_add_series(data_comp_dep(), "line", hcaes(x = annee, y = nombre_patients_uniques , group = profession_sante), marker = list(symbol = "square"), tooltip = list(pointFormat = "<b>Nombre de patient :</b> {point.y}<br/>")) %>%
+                       hc_add_series(data_comp_dep(), 
+                                     "line", 
+                                     hcaes(annee, 
+                                           hono_sans_depassement_moyens, 
+                                           group = profession_sante), 
+                                     yAxis=1,marker = list(symbol = "circle"), 
+                                     tooltip = list(pointFormat = "<b>Honoraire annuel moyen :</b> {point.y} € <br/>")) %>% 
+                       hc_add_series(data_comp_dep(), 
+                                     "line", 
+                                     hcaes(x = annee,
+                                           y = nombre_patients_uniques ,
+                                           group = profession_sante), 
+                                     marker = list(symbol = "square"), 
+                                     tooltip = list(pointFormat = "<b>Nombre de patient :</b> {point.y}<br/>")) %>%
                        hc_yAxis_multiples(
                          list(
                            title = list(text = "Patientele"), 
@@ -175,12 +189,14 @@ function(input, output, session) {
                      isolate({
                        newdta[(profession_sante == input$profession &
                                  annee == max(annee) &
-                                 classe_age == "tout_age"), list(effectif = round(1/(effectif/Effectif))), by= libelle_departement]
+                                 classe_age == "tout_age"), .(effectif = round(1/(effectif/Effectif))), by= libelle_departement]
                      })
                    })
                    
                    output$carte_region <- renderLeaflet({
-                     qpal <- colorBin(palette = "YlGnBu",bins=5,domain = data_carte_region()$effectif[!is.infinite(data_carte_region()$effectif)])
+                     qpal <- colorBin(palette = "YlGnBu",
+                                      bins=5,
+                                      domain = data_carte_region()$effectif[!is.infinite(data_carte_region()$effectif)])
                      leaflet(data_carte) %>% addTiles() %>% addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity=0.5,fillColor = ~qpal(data_carte_region()$effectif)) %>%
                        addLegend(title = "Nombre d'habitant par praticien", pal = qpal, values = ~data_carte_region()$effectif, opacity = 1)
                      #addProviderTiles
@@ -251,8 +267,10 @@ function(input, output, session) {
                      #                      )
                      
                      pyr <- ggplot(pyr_dta, aes(x = class_age_num, y = effectif, fill = libelle_sexe)) + 
-                       geom_bar(data = pyr_dta[libelle_sexe =="femmes",], stat = "identity") +
-                       geom_bar(data = pyr_dta[libelle_sexe =="hommes",], stat = "identity") +
+                       geom_bar(data = pyr_dta[libelle_sexe =="femmes",], 
+                                stat = "identity") +
+                       geom_bar(data = pyr_dta[libelle_sexe =="hommes",],
+                                stat = "identity") +
                        scale_x_continuous(breaks = seq(1,nlevels(pyr_dta$classe_age), by =1),
                                           labels = levels(pyr_dta$classe_age)) +
                        coord_flip()
@@ -286,8 +304,15 @@ function(input, output, session) {
                    
                    output$hono_patien <- renderHighchart({
                      highchart() %>%
-                       hc_add_series(data_comp_reg(), "line", hcaes(annee, hono_sans_depassement_moyens, group = profession_sante), yAxis=1, tooltip = list(pointFormat = "<b>Honoraire annuel moyen :</b> {point.y} € <br/>")) %>% 
-                       hc_add_series(data_comp_reg(), "line", hcaes(x = annee, y = nombre_patients_uniques , group = profession_sante), tooltip = list(pointFormat = "<b>Nombre de patient :</b> {point.y}")) %>%
+                       hc_add_series(data_comp_reg(), "line", hcaes(annee, 
+                                                                    hono_sans_depassement_moyens, 
+                                                                    group = profession_sante), 
+                                     yAxis=1, 
+                                     tooltip = list(pointFormat = "<b>Honoraire annuel moyen :</b> {point.y} € <br/>")) %>% 
+                       hc_add_series(data_comp_reg(), 
+                                     "line",
+                                     hcaes(x = annee, y = nombre_patients_uniques , group = profession_sante), 
+                                     tooltip = list(pointFormat = "<b>Nombre de patient :</b> {point.y}")) %>%
                        hc_yAxis_multiples(
                          list(
                            title = list(text = "Patientele"), 

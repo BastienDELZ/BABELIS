@@ -1,11 +1,4 @@
-#
-# This is the user-interface definition of a Shiny web application. You can
-# run the application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
+
 library(shiny)
 
 
@@ -15,8 +8,10 @@ ui <- dashboardPage(
   dashboardSidebar(
     sidebarMenu(
       id = "tabs",
-      menuItem("Exploration", tabName = "exploration"),
-      menuItem("Info",tabName = "info")
+      menuItem("Exploration", 
+               tabName = "exploration"),
+      menuItem("Info",
+               tabName = "info")
     )
   ),
   
@@ -74,7 +69,6 @@ ui <- dashboardPage(
                                  label = "Profession libérale d'intérêt:",
                                  #a remplacer par levels(data_effectif[, profession_sante])
                                  choices = levels(data_effectif[, profession_sante]),
-                                 #Pemert le choix de plusieurs professions <- a discuter
                                  multiple = F,
                                  selected = "Chirurgiens"
                                ),
@@ -83,7 +77,6 @@ ui <- dashboardPage(
                                  label = "Profession libérale à comparer:",
                                  #a remplacer par levels(data_effectif[, profession_sante])
                                  choices = levels(data_effectif[, profession_sante]),
-                                 #Pemert le choix de plusieurs professions <- a discuter
                                  multiple = T
                                ),
                                div(actionButton(
@@ -150,12 +143,19 @@ ui <- dashboardPage(
                 headerPanel("Résumé de votre requête - Info"),
                 sidebarLayout(
                   sidebarPanel(width = 2,
-                               selectInput("region_info", label = "Région :",
-                                           choices = levels(data_effectif[, libelle_region]), multiple = FALSE),
-                               selectInput("departement_info", label = "Département :",
-                                           choices = levels(data_effectif[, libelle_departement]), multiple = FALSE, selected = "Hérault"),
-                               selectInput("profession_info", label = "Profession :",
-                                           choices = levels(data_effectif[, profession_sante]), multiple = FALSE),
+                               selectInput("region_info",
+                                           label = "Région :",
+                                           choices = levels(data_effectif[, libelle_region]), 
+                                           multiple = FALSE),
+                               selectInput("departement_info",
+                                           label = "Département :",
+                                           choices = levels(data_effectif[, libelle_departement]), 
+                                           multiple = FALSE, 
+                                           selected = "Hérault"),
+                               selectInput("profession_info", 
+                                           label = "Profession :",
+                                           choices = levels(data_effectif[, profession_sante]), 
+                                           multiple = FALSE),
                                div(actionButton(inputId = "go_info",
                                                 label = "MAJ",
                                                 icon = icon("rotate")
@@ -164,10 +164,18 @@ ui <- dashboardPage(
                   ),
                   mainPanel(width = 10,
                     fluidRow(
-                      box(title = textOutput(outputId = "region_info"), width = 12, solidHeader = TRUE, status = "primary", color = "#286192",
+                      box(title = textOutput(outputId = "region_info"), 
+                          width = 12, 
+                          solidHeader = TRUE, 
+                          status = "primary", 
+                          color = "#286192",
                           fluidRow(
                             column(width = 4,
-                                   box(title = textOutput(outputId = "nb_info"), width = NULL, solidHeader = TRUE, status = "success", textOutput(outputId = "texte_info")
+                                   box(title = textOutput(outputId = "nb_info"),
+                                       width = NULL, 
+                                       solidHeader = TRUE, 
+                                       status = "success", 
+                                       textOutput(outputId = "texte_info")
                                        
                                        
                                        #box(title = "Percent of Total Customers", width = NULL, status = "success", infoBoxOutput("percentTotalStayed"))
