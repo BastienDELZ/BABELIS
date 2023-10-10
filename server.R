@@ -149,14 +149,14 @@ function(input, output, session) {
                    
                    output$hono_patien <- renderHighchart({
                      highchart() %>%
-                       hc_add_series(data_comp_dep(), "line", hcaes(annee, hono_sans_depassement_moyens, group = profession_sante), yAxis=1,marker = list(symbol = "circle")) %>% 
-                       hc_add_series(data_comp_dep(), "line", hcaes(x = annee, y = nombre_patients_uniques , group = profession_sante), marker = list(symbol = "square")) %>%
+                       hc_add_series(data_comp_dep(), "line", hcaes(annee, hono_sans_depassement_moyens, group = profession_sante), yAxis=1,marker = list(symbol = "circle"), tooltip = list(pointFormat = "<b>Honoraire annuel moyen :</b> {point.y} € <br/>")) %>% 
+                       hc_add_series(data_comp_dep(), "line", hcaes(x = annee, y = nombre_patients_uniques , group = profession_sante), marker = list(symbol = "square"), tooltip = list(pointFormat = "<b>Nombre de patient :</b> {point.y}")) %>%
                        hc_yAxis_multiples(
                          list(
                            title = list(text = "Patientele"), 
                            opposite = F),
                          list(
-                           title = list(text = "Salaire moyen hors depassement"), 
+                           title = list(text = "Honoraire mensuel moyen hors depassement"), 
                            opposite = T)
                        ) %>%
                        hc_tooltip(shared = TRUE)
@@ -266,12 +266,14 @@ function(input, output, session) {
                        hc_add_series(data_comp_reg()[order(annee)],
                                      "line",
                                      hcaes(x = annee, y = effectif, group = profession_sante),
-                                     marker = list(symbol = "square")) %>%
+                                     marker = list(symbol = "square"), 
+                                     tooltip = list(pointFormat = "<b>Nombre de praticien :</b> {point.y}<br/>")) %>%
                        hc_add_series(data_comp_reg()[,.(ratio = round(1/(effectif/Effectif))), by =.(annee, profession_sante)][order(annee)],
                                      "line",
                                      hcaes(x = annee, y = ratio, group = profession_sante),
                                      yAxis =1,
-                                     marker = list(symbol = "circle")) %>%
+                                     marker = list(symbol = "circle"),
+                                     tooltip = list(pointFormat = "<b>Nombre d'habitant par praticien :</b> {point.y}")) %>%
                        hc_yAxis_multiples(
                          list(
                            title = list(text = paste("Effectif de praticien en", input$departement)), 
@@ -284,14 +286,14 @@ function(input, output, session) {
                    
                    output$hono_patien <- renderHighchart({
                      highchart() %>%
-                       hc_add_series(data_comp_reg(), "line", hcaes(annee, hono_sans_depassement_moyens, group = profession_sante), yAxis=1) %>% 
-                       hc_add_series(data_comp_reg(), "line", hcaes(x = annee, y = nombre_patients_uniques , group = profession_sante)) %>%
+                       hc_add_series(data_comp_reg(), "line", hcaes(annee, hono_sans_depassement_moyens, group = profession_sante), yAxis=1, tooltip = list(pointFormat = "<b>Honoraire annuel moyen :</b> {point.y} € <br/>")) %>% 
+                       hc_add_series(data_comp_reg(), "line", hcaes(x = annee, y = nombre_patients_uniques , group = profession_sante), tooltip = list(pointFormat = "<b>Nombre de patient :</b> {point.y}")) %>%
                        hc_yAxis_multiples(
                          list(
                            title = list(text = "Patientele"), 
                            opposite = F),
                          list(
-                           title = list(text = "Salaire moyen hors depassement"), 
+                           title = list(text = "Honoraire moyen hors depassement"), 
                            opposite = T)
                        ) %>%
                        hc_tooltip(shared = TRUE)
