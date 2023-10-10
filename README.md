@@ -7,6 +7,7 @@ Elle a été conçue pour aider les professionnels de la santé à prendre des d
  ## Description des données : 
 Pour ceci, nous avions à notre disposition un large jeu de données :
 (source : https://data.opendatasoft.com/explore/?disjunctive.language&disjunctive.source_domain_title&disjunctive.theme&disjunctive.semantic.classes&disjunctive.semantic.properties&sort=explore.popularity_score&q=vin&refine.source_domain_title=Data+ameli&fbclid=IwAR0ehSCcWvpoUJjjbChbdE1sV4f7Qho0U7VcEr2shQf23YYTyQy9EmBipuo) 
+
 Cette base de données un peu plus de 2 million d’observations, fournissant l’effectif, à la maille année (2010<année<2021, profession santé, région, département, classe d’âge et sexe.
 Afin de ramener cet effectif à la population, obtenant le nombre d'habitant par observation (cf maille décrite ci-dessus) nous avons fusionné notre jeu de données avec un autres jeux de données : 
 un donnant l’effectif total de la pop par région, département et par année (allant de 2014 à 2021) 
