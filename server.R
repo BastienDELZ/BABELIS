@@ -361,9 +361,8 @@ function(input, output, session) {
   #               {
   #                 updateSelectInput(session,
   #                                   inputId = "profession_info",
-  #                                   #a remplacer par levels(data_effectif[, profession_sante])
-  #                                   choices = levels(droplevels(data_effectif[(libelle_region == input$region & libelle_sexe == "tout sexe" & classe_age == "tout_age" & effectif >> 0 & annee == max(annee)),])$profession)
-  #                                   #Pemert le choix de plusieurs professions <- a discuter
+  #                                   choices = levels(droplevels(data_effectif[(libelle_region == input$region_info & libelle_sexe == "tout sexe" & classe_age == "tout_age" & effectif > 0 & annee == max(annee)),])$profession)
+  # 
   #                 )
   #               })
   
@@ -371,9 +370,7 @@ function(input, output, session) {
                {
                  updateSelectInput(session,
                                    inputId = "departement_info",
-                                   #a remplacer par levels(data_effectif[, profession_sante])
                                    choices = levels(droplevels(data_effectif[libelle_region == input$region_info,])$libelle_departement)
-                                   #Pemert le choix de plusieurs professions <- a discuter
                  )
                })
   
@@ -461,7 +458,11 @@ function(input, output, session) {
   output$hono_info <- renderText({
     input$go_info
     isolate({
-      paste(newdta_info()[, hono_sans_depassement_moyens], "€ par praticien")
+      if(newdta_info()[, hono_sans_depassement_moyens] == 0 | is.na(newdta_info()[, hono_sans_depassement_moyens])){
+        paste("Données manquantes pour", input$profession_info, "en", input$departement_info)
+      }else{
+        paste(newdta_info()[, hono_sans_depassement_moyens], "€ par praticien")
+      }
     })
   })
   
@@ -486,7 +487,7 @@ function(input, output, session) {
   output$comp_hono <- renderText({
     input$go_info
     isolate({
-      paste("Département avec le meilleur ratio :", info()[ratio ==max(ratio), .(libelle_departement, ratio)][[1,1]], "avec", info()[ratio ==max(ratio),.(libelle_departement, ratio)][[1,2]], "habitants par praticiens", '<br/>',"Département avec le moins bon ratio :" , info()[ratio == min(ratio),.(libelle_departement, ratio)][[1,1]], "avec", info()[ratio == min(ratio),.(libelle_departement, ratio)][[1,2]], "habitants par praticiens")
+      paste("Département avec le meilleur ratio :", '<br/>',info()[ratio ==max(ratio), .(libelle_departement, ratio)][[1,1]], "avec", info()[ratio ==max(ratio),.(libelle_departement, ratio)][[1,2]], "habitants par praticiens", '<br/>',"Département avec le moins bon ratio :" ,'<br/>' ,info()[ratio == min(ratio),.(libelle_departement, ratio)][[1,1]], "avec", info()[ratio == min(ratio),.(libelle_departement, ratio)][[1,2]], "habitants par praticiens")
     })
   })
 }

@@ -176,16 +176,10 @@ ui <- dashboardPage(
                                        solidHeader = TRUE, 
                                        status = "success", 
                                        textOutput(outputId = "texte_info")
-                                       
-                                       
-                                       #box(title = "Percent of Total Customers", width = NULL, status = "success", infoBoxOutput("percentTotalStayed"))
-                                   ))
-                            # column(width = 4,
-                            #        box(title = "Comparaison national", width = NULL, solidHeader = TRUE, status = "success", htmlOutput(outputId = "comp_hono" ))
-                            #            
-                            #            
-                            #            #box(title = "Percent of Total Customers", width = NULL, status = "success", infoBoxOutput("percentTotalStayed"))
-                            #        )
+                                   )),
+                            column(width = 4,
+                                   box(title = "Comparaison nationale", width = NULL, solidHeader = TRUE, status = "success", htmlOutput(outputId = "comp_hono" ))
+                                   )
                             
                           ),
                           "Comparaison du nombre d'habitant pour 1 praticien avec les autres départements de la région :",
