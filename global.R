@@ -189,4 +189,3 @@ newdta <-newdta[, ':=' (s_par_region =sum(effectif), S_EFF_region = sum(Effectif
 #     )
 #   )
 
-

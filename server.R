@@ -131,12 +131,14 @@ function(input, output, session) {
                        hc_add_series(data_comp_dep()[order(annee)],
                                      "line",
                                      hcaes(x = annee, y = effectif, group = profession_sante),
-                                     marker = list(symbol = "square")) %>%
+                                     marker = list(symbol = "square"),
+                                     tooltip = list(pointFormat = "<b>Effectif praticien :</b> {point.y}<br/>")) %>%
                        hc_add_series(data_comp_dep()[,.(ratio = round(1/(effectif/Effectif))), by =.(annee, profession_sante)][order(annee)],
                                      "line",
                                      hcaes(x = annee, y = ratio, group = profession_sante),
                                      yAxis =1,
-                                     marker = list(symbol = "circle")) %>%
+                                     marker = list(symbol = "circle"),
+                                     tooltip = list(pointFormat = "<b>Nombre d'habitant par praticien :</b> {point.y}<br/>")) %>%
                        hc_yAxis_multiples(
                          list(
                            title = list(text = paste("Effectif de praticien en", data_comp_dep()$libelle_departement[1])), 
@@ -159,7 +161,7 @@ function(input, output, session) {
                            title = list(text = "Honoraire mensuel moyen hors depassement"), 
                            opposite = T)
                        ) %>%
-                       hc_tooltip(shared = TRUE)
+                       hc_tooltip(shared = F)
                    })
                    
                    output$datatable <- renderDataTable({
@@ -361,14 +363,14 @@ function(input, output, session) {
   
   
   # observeEvent(input$region_info,
-  #              {
-  #                updateSelectInput(session,
-  #                                  inputId = "profession_info",
-  #                                  #a remplacer par levels(data_effectif[, profession_sante])
-  #                                  choices = levels(droplevels(data_effectif[(libelle_region == input$region & libelle_sexe == "tout sexe" & classe_age == "tout_age" & effectif > 0 & annee == max(annee)),])$profession)
-  #                                  #Pemert le choix de plusieurs professions <- a discuter
-  #                )
-  #              })
+  #               {
+  #                 updateSelectInput(session,
+  #                                   inputId = "profession_info",
+  #                                   #a remplacer par levels(data_effectif[, profession_sante])
+  #                                   choices = levels(droplevels(data_effectif[(libelle_region == input$region & libelle_sexe == "tout sexe" & classe_age == "tout_age" & effectif >> 0 & annee == max(annee)),])$profession)
+  #                                   #Pemert le choix de plusieurs professions <- a discuter
+  #                 )
+  #               })
   
   observeEvent(input$region_info,
                {
@@ -416,6 +418,17 @@ function(input, output, session) {
     })
   })
 
+  info <- reactive({
+    input$go_info
+    isolate({
+      newdta[(profession_sante == input$profession_info & 
+                annee == max(annee)  &
+                libelle_departement != input$departement_info &
+                classe_age == "tout_age" & 
+                libelle_sexe == "tout sexe"), 
+             .(ratio = round(1/(effectif/Effectif)), hono_sans_depassement_moyens, nombre_patients_uniques), by = libelle_departement]
+    })
+  })
   # output$comparaison_region <- renderText({
   #   texte <- ""
   #   for(i in 1:nrow(newdta_comp_region())){
@@ -475,5 +488,11 @@ function(input, output, session) {
     
   })
   
+  output$comp_hono <- renderText({
+    input$go_info
+    isolate({
+      paste("Département avec le meilleur ratio :", info()[ratio ==max(ratio), .(libelle_departement, ratio)][[1,1]], "avec", info()[ratio ==max(ratio),.(libelle_departement, ratio)][[1,2]], "habitants par praticiens", '<br/>',"Département avec le moins bon ratio :" , info()[ratio == min(ratio),.(libelle_departement, ratio)][[1,1]], "avec", info()[ratio == min(ratio),.(libelle_departement, ratio)][[1,2]], "habitants par praticiens")
+    })
+  })
 }
   

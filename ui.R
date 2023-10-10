@@ -10,7 +10,7 @@ library(shiny)
 
 
 ui <- dashboardPage(
-  dashboardHeader(title = "Application"),
+  dashboardHeader(title = "BABELIS"),
   
   dashboardSidebar(
     sidebarMenu(
@@ -86,14 +86,6 @@ ui <- dashboardPage(
                                  #Pemert le choix de plusieurs professions <- a discuter
                                  multiple = T
                                ),
-                               checkboxGroupInput(
-                                 inputId = "sexe", 
-                                 label = "Please select", 
-                                 #a remplacer par levels(test[, libelle_sexe])
-                                 selected = "F",
-                                 #a remplacer par levels(test[, libelle_sexe])
-                                 choices = levels(data_effectif[, libelle_sexe])
-                               ),
                                div(actionButton(
                                  inputId = "go",
                                  label = "MAJ",
@@ -112,7 +104,7 @@ ui <- dashboardPage(
                                                tabPanel("Graphique",
                                                         tags$hr(),
                                                         fluidRow(
-                                                          box(title = "A adapter avec un textOutput",
+                                                          box(title = "Effectif de professionnels de santé par année",
                                                               width = 12,
                                                               #plotOutput("comb_plot")
                                                               withSpinner(type =5 ,
@@ -121,13 +113,13 @@ ui <- dashboardPage(
                                                               )
                                                           ),
                                                         fluidRow(
-                                                          box(title = "A adapter avec un textOutput",
+                                                          box(title = "Pyramide des âges au sein de la profession",
                                                               width = 6,
                                                               withSpinner(type =5, 
                                                                           plotOutput("pyr")
                                                               )
                                                               ),
-                                                          box(title = "A adapter avec un textOutput",
+                                                          box(title = "Nombre d'habitants par praticien par année",
                                                               width = 6,
                                                               withSpinner(type =5,
                                                                           highchartOutput("comp_pro")
@@ -135,7 +127,7 @@ ui <- dashboardPage(
                                                           )
                                                         ),
                                                         fluidRow(
-                                                          box(title = "A adapter avec un textOutput",
+                                                          box(title = "Honoraires annuels et patientèle par profession",
                                                               width = 12,
                                                               #plotOutput("comb_plot")
                                                               withSpinner(type =5,
@@ -175,12 +167,18 @@ ui <- dashboardPage(
                       box(title = textOutput(outputId = "region_info"), width = 12, solidHeader = TRUE, status = "primary", color = "#286192",
                           fluidRow(
                             column(width = 4,
-                                   box(title = textOutput(outputId = "nb_info"), width = NULL, solidHeader = TRUE, status = "success", textOutput(outputId = "texte_info"),
+                                   box(title = textOutput(outputId = "nb_info"), width = NULL, solidHeader = TRUE, status = "success", textOutput(outputId = "texte_info")
                                        
-                                       #box(title = "Number of Customers", width = NULL, status = "success", textOutput(outputId = "texte_info")),
                                        
                                        #box(title = "Percent of Total Customers", width = NULL, status = "success", infoBoxOutput("percentTotalStayed"))
                                    ))
+                            # column(width = 4,
+                            #        box(title = "Comparaison national", width = NULL, solidHeader = TRUE, status = "success", htmlOutput(outputId = "comp_hono" ))
+                            #            
+                            #            
+                            #            #box(title = "Percent of Total Customers", width = NULL, status = "success", infoBoxOutput("percentTotalStayed"))
+                            #        )
+                            
                           ),
                           "Comparaison du nombre d'habitant pour 1 praticien avec les autres départements de la région :",
                           tags$br(),
