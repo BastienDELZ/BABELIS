@@ -1,11 +1,6 @@
-#
-# This is the server logic of a Shiny web application. You can run the
-# application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
+################################
+# A.HUSSON, K.LENOTTE, B.DELEUZE
+################################
 
 library(shiny)
 
@@ -120,6 +115,8 @@ function(input, output, session) {
                        geom_bar(data = pyr_dta[libelle_sexe =="hommes",], stat = "identity") +
                        scale_x_continuous(breaks = seq(1,nlevels(pyr_dta$classe_age), by =1),
                                           labels = levels(pyr_dta$classe_age)) +
+                       xlab("Classe d'âge")+
+                       ylab("Effectif")+
                        coord_flip()
                      # scale_y_continuous(breaks  = range_pyr_dep,
                      #                    labels = abs(range_pyr_dep))
@@ -185,7 +182,7 @@ function(input, output, session) {
                    output$carte_region <- renderLeaflet({
                      qpal <- colorBin(palette = "YlGnBu",bins=5,domain = data_carte_region()$effectif[!is.infinite(data_carte_region()$effectif)])
                      leaflet(data_carte) %>% addTiles() %>% addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity=0.5,fillColor = ~qpal(data_carte_region()$effectif)) %>%
-                       addLegend(title = "Nombre d'habitant par praticien", pal = qpal, values = ~data_carte_region()$eff, opacity = 1)
+                       addLegend(title = "Nombre d'habitant par praticien", pal = qpal, values = ~data_carte_region()$effectif, opacity = 1)
                      #addProviderTiles
                    })
                    
@@ -335,33 +332,6 @@ function(input, output, session) {
                    })
                  }
                })
-
-  
-  # output$comb_plot_dep <- renderPlot({
-  #   tot_dep <- data_dep()[, .(effectif_tot = sum(effectif)), by = .(annee)]
-  #   # draw the histogram with the specified number of bins
-  #   plot1 <- ggplot(data_dep(), aes(x = as.factor(annee), y = effectif, fill = factor(classe_age))) +
-  #     
-  #     geom_bar(stat = "identity", position = position_dodge(width = 0.9)) +
-  #     labs(x = "Année", y = "Effectif par classe d'âge", fill = "Classe d'âge") +
-  #     theme_minimal() +
-  #     theme(plot.margin = unit(c(5.5, 5.5, 0, 5.5), "pt"))
-  #   
-  #   plot2 <- ggplot(tot_dep, aes(x = as.factor(annee), y = effectif_tot)) +
-  #     geom_point() +
-  #     labs(x = "Année", y = "Effectif total") +
-  #     theme_minimal() +
-  #     theme(axis.text.x = element_blank(),
-  #           axis.ticks.x = element_blank(),
-  #           axis.title.x = element_blank(),
-  #           plot.margin = unit(c(5.5, 5.5, 0, 5.5), "pt"))
-  #   # faire un autre graphique avec les indicateurs de population (taux)
-  #   combined_plot <- plot2 / plot1 #plot 2 au dessus du plot 1
-  #   combined_plot
-  # })
-  
-  
-  
   # observeEvent(input$region_info,
   #               {
   #                 updateSelectInput(session,
